@@ -1,2 +1,32 @@
-<h1>Hi</h1>
-<h1>Hi</h1>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+    <h1>My notetaking app</h1>
+    <section class="input">
+    <form>
+        <div>
+        <label for="todoInput">Add a todo : </label>
+        <input name="todoInput" id="text" type="text" maxlength="100" autofocus>
+    </div>
+    <div>
+        <label for="importantButton">Label as important : </label>
+        <input type="checkbox" name="importantButton" id="importance">
+        <button type="submit">Submit</button>
+    </div>
+    </form>
+</section>
+<section class="storage">
+    <h3>Current Todos</h3>
+    <ol class="list">
+
+    </ol>
+</section>
+    <script src="./modifications.js"></script>
+</body>
+</html>
