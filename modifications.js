@@ -3,16 +3,46 @@ const textInput = document.querySelector("#text");
 const importanceInput = document.querySelector("#importance");
 const list = document.querySelector(".list");
 const everyDeleteButton = document.querySelectorAll("button.delete")
+const todoHeader = document.querySelector(".storage > h3")
+const entryReminder = document.createElement("b")
+entryReminder.textContent = "Only 5 elements please"
+todoHeader.appendChild(entryReminder)
+entryReminder.style.visibility = "hidden"
+
+let totalEntries = 0;
+const MAX_ENTRIES = 5;
 
 form.addEventListener("submit", (e) => {
     e.preventDefault(); // prevent the page from reloading when form is submitted
     const text = textInput.value;
     const important = importanceInput.checked;
-    makeATodo(text, important);
+    updateTodoList(text, important);
 })
+
+function showEntryReminder(){
+    entryReminder.style.visibility = "visible"
+}
+
+function removeEntryReminder(){
+    entryReminder.style.visibility = "hidden"
+}
+
+function updateTodoList(text, important){
+    // check if we have hit max number of todos
+    console.log("adding todo", totalEntries)
+    if(totalEntries < MAX_ENTRIES){
+        removeEntryReminder();
+        makeATodo(text, important)
+        totalEntries++;
+    }
+    else{
+        showEntryReminder();
+    }
+}
 
 // makes a todo and adds it to the list
 function makeATodo(text, isImportant){
+
     // make new element and append it to list with delete button
     let deleteButton = document.createElement("button");
     deleteButton.classList += "delete"
@@ -36,5 +66,6 @@ function addDeleteBtnEventListener(btn) {
         console.log(btn.parentElement);
         btn.parentElement.classList += " hidden"; // hide the todo now that its been deleted
         btn.parentElement.nextElementSibling.remove(); // remove the br so no extra width is maintained
+        totalEntries--;
     })
 }
