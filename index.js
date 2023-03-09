@@ -11,7 +11,8 @@ app.use(() => {
 app.use(express.static("public"));
 
 app.get("/", (req, res) => {
-    res.sendFile("index.html", {root: path.join(__dirname, 'public')});
+    res.json({name:"me"});
+    //res.sendFile("index.html", {root: path.join(__dirname, 'public')});
 })
 
 app.post("/task", (req, res) => {
