@@ -4,7 +4,7 @@ const PORT = 3050;
 
 app.use(express.static('public'));
 
-app.use((req, res, next) => {
+app.use(() => {
     console.log("New request")
 })
 
@@ -14,6 +14,6 @@ app.post("/", (req, res) => {
     res.send(`Error ${res.statusCode}`);
 })
 
-app.listen(PORT, () => {
-    console.log(`listening on port ${PORT}`)
-})
+// app.listen(PORT, () => {
+//     console.log(`listening on port ${PORT}`)
+// })
