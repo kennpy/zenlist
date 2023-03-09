@@ -14,10 +14,31 @@ const MAX_ENTRIES = 5;
 
 form.addEventListener("submit", (e) => {
     e.preventDefault(); // prevent the page from reloading when form is submitted
-    const text = textInput.value;
-    const important = importanceInput.checked;
-    updateTodoList(text, important);
+    if(totalEntries < MAX_ENTRIES){
+        removeEntryReminder();
+        const text = textInput.value;
+        const isImportant = importanceInput.checked;
+        const isValidText = validateText(text);
+        if(isValidText){
+            updateTodoList(text, isImportant);
+            saveToServer(text, isImportant);
+        }
+    }else{
+        showEntryReminder();
+    }
 })
+
+// rejects/accepts input text 
+function validateText(text){
+    // add some stuff 
+    return true;
+}
+function saveToServer(text, isImportant){
+    fetch("/task", {
+        method:"POST",
+        body:JSON.stringify({[text] : isImportant})
+    }).then(res => console.log(res.text()))
+}
 
 function showEntryReminder(){
     entryReminder.style.visibility = "visible"
@@ -27,45 +48,43 @@ function removeEntryReminder(){
     entryReminder.style.visibility = "hidden"
 }
 
-function updateTodoList(text, important){
+function updateTodoList(text, isImportant){
     // check if we have hit max number of todos
+    totalEntries++;
     console.log("adding todo", totalEntries)
-    if(totalEntries < MAX_ENTRIES){
-        removeEntryReminder();
-        makeATodo(text, important)
-        totalEntries++;
-    }
-    else{
-        showEntryReminder();
-    }
-}
-
-// makes a todo and adds it to the list
-function makeATodo(text, isImportant){
-
-    // make new element and append it to list with delete button
-    let deleteButton = document.createElement("button");
-    deleteButton.classList += "delete"
-    deleteButton.textContent = "Delete"
-    deleteButton.style.marginLeft = "1%"
-
-    let newTodo = document.createElement("div"); 
-    newTodo.classList += "child"
-    newTodo.textContent = text;
-    newTodo.appendChild(deleteButton)
-    addDeleteBtnEventListener(deleteButton);
-    // if its important make text bold
-    if(isImportant) newTodo.style.fontWeight = "bold"
+    
+    let newTodo = makeTodo(text, isImportant);
     list.append(document.createElement("br")) // append a br so there is a line break between each new todo
     list.appendChild(newTodo) 
 }
 
-function addDeleteBtnEventListener(btn) {
+function makeTodo(text, isImportant) {
+    // make new element and append it to list with delete button
+    let deleteButton = makeDeleteButton();
+    let newTodo = document.createElement("div");
+    newTodo.classList += "child";
+    newTodo.textContent = text;
+    newTodo.appendChild(deleteButton);
+    attachDeleteBtnEventListener(deleteButton);
+    // if its important make text bold
+    if(isImportant) newTodo.style.fontWeight = "bold";
+    return newTodo;
+}
+
+function makeDeleteButton() {
+    let deleteButton = document.createElement("button");
+    deleteButton.classList += "delete";
+    deleteButton.textContent = "Delete";
+    deleteButton.style.marginLeft = "1%";
+    return deleteButton;
+}
+
+function attachDeleteBtnEventListener(btn) {
     btn.addEventListener("click", (e) => {
         e.preventDefault(); // dont reload page
         console.log(btn.parentElement);
         btn.parentElement.classList += " hidden"; // hide the todo now that its been deleted
         btn.parentElement.nextElementSibling.remove(); // remove the br so no extra width is maintained
-        totalEntries--;
+        totalEntries = totalEntries - 1;
     })
 }
