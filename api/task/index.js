@@ -3,7 +3,7 @@ export default (req, res) => {
     console.log(requestMethod)
     switch (requestMethod) {
     case 'POST':
-        const body = JSON.parse(req.body);
+        //const body = JSON.parse(req.body);
       res.status(200).json({ message: `You submitted a post request: ${body}` })
       break;
     // handle other HTTP methods
