@@ -1,6 +1,7 @@
 export default (req, res) => {
     const requestMethod = req.method;
     console.log(requestMethod)
+    console.log(req.body)
     switch (requestMethod) {
     case 'POST':
         //const body = JSON.parse(req.body);
