@@ -34,10 +34,10 @@ function validateText(text){
     return true;
 }
 function saveToServer(text, isImportant){
-    fetch("/api/task", {
+    fetch("/api/task/make", {
         method:"POST",
         body:JSON.stringify({[text] : isImportant})
-    }).then(res => console.log(res.text()))
+    }).then(res => console.log(res.json()))
 }
 
 function showEntryReminder(){

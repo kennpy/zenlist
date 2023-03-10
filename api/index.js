@@ -23,7 +23,20 @@ app.get("/", (req, res) => {
 app.post("/", (req, res) => {
     console.log("/");
 
-    res.json({name:"get"});
+    res.json({name:"post"});
+    //res.sendFile("index.html", {root: path.join(__dirname, 'public')});
+})
+
+app.get("/task", (req, res) => {
+    console.log("/task get task");
+    res.json({name:"get task"});
+    //res.sendFile("index.html", {root: path.join(__dirname, 'public')});
+})
+
+app.post("/task", (req, res) => {
+    console.log("/task get task");
+
+    res.json({name:"post"});
     //res.sendFile("index.html", {root: path.join(__dirname, 'public')});
 })
 
