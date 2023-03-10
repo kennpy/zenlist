@@ -26,6 +26,9 @@ form.addEventListener("submit", (e) => {
     }else{
         showEntryReminder();
     }
+    // clear text and bold color
+    textInput.value = "";
+    importanceInput.checked = false;
 })
 
 // rejects/accepts input text 
@@ -34,9 +37,9 @@ function validateText(text){
     return true;
 }
 function saveToServer(text, isImportant){
-    fetch("/api/task/make", {
-        method:"POST",
-        body:JSON.stringify({[text] : isImportant})
+    fetch("/api/task", {
+        method:"GET",
+        //body:JSON.stringify({[text] : isImportant})
     }).then(res => console.log(res.json()))
 }
 
@@ -63,11 +66,13 @@ function makeTodo(text, isImportant) {
     let deleteButton = makeDeleteButton();
     let newTodo = document.createElement("div");
     newTodo.classList += "child";
-    newTodo.textContent = text;
+    // if its important make text bold and add start
+    newTodo.textContent = (isImportant) ? "\u2729 " + text : text;
+    newTodo.setAttribute("draggable","true" );
+    newTodo.style.cursor =  "move";
+   
     newTodo.appendChild(deleteButton);
     attachDeleteBtnEventListener(deleteButton);
-    // if its important make text bold
-    if(isImportant) newTodo.style.fontWeight = "bold";
     return newTodo;
 }
 

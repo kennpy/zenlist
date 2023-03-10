@@ -13,7 +13,11 @@
     <form action="/" method="POST">
         <div>
         <label for="todoInput">Add a todo : </label>
-        <input name="todoInput" id="text" type="text" maxlength="100" autofocus>
+        <div class="cursor">
+            <input onblur="this.focus()" type="text" class="rq-form-element" name="todoInput" id="text" type="text" minlength="3" maxlength="100" required autofocus/>
+            <i></i>
+        </div>
+        
     </div>
     <div>
         <label for="importantButton">Label as important : </label>

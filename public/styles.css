@@ -17,3 +17,33 @@ h1 {
     margin: 5% 0 1% 0 ;
 }
 
+input[type="text"]
+{
+    background: transparent;
+    border: none;
+}
+
+.cursor {
+    position: relative;
+}
+.cursor i {
+    position: absolute;
+    width: 1px;
+    height: 80%;
+    background-color: gray;
+    left: 5px;
+    top: 10%;
+    animation-name: blink;
+    animation-duration: 800ms;
+    animation-iteration-count: infinite;
+    opacity: 1;
+}
+
+.cursor input:focus + i {
+    display: none;
+}
+
+@keyframes blink {
+    from { opacity: 1; }
+    to { opacity: 0; }
+}
