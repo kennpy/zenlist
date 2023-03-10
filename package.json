@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start":"node index.js",
+    "start": "node index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -17,5 +17,8 @@
   "bugs": {
     "url": "https://github.com/kennpy/zenlist/issues"
   },
-  "homepage": "https://github.com/kennpy/zenlist#readme"
+  "homepage": "https://github.com/kennpy/zenlist#readme",
+  "dependencies": {
+    "body-parser": "^1.20.2"
+  }
 }
