@@ -5,7 +5,7 @@ export default (req, res) => {
     case 'POST':
         //const body = JSON.parse(req.body);
       //res.status(200).json({ message: `You submitted a post request: ${body}` })
-      res.status(200).json({ message: 'You submitted a get request!'})
+      res.status(200).json({ message: 'You submitted a post request!'})
       break;
     // handle other HTTP methods
     default:
