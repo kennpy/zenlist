@@ -39,7 +39,7 @@ function validateText(text){
 function saveToServer(text, isImportant){
     fetch("/api/task", {
         method:"POST",
-        //body:JSON.stringify({[text] : isImportant})
+        body:JSON.stringify({[text] : isImportant})
     }).then(res => console.log(res.json()))
 }
 
