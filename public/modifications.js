@@ -10,18 +10,31 @@ todoHeader.appendChild(entryReminder)
 entryReminder.style.visibility = "hidden"
 
 let totalEntries = 0;
-const MAX_ENTRIES = 5;
+const MAX_NUM_ENTRIES = 5;
+const MIN_ENTRY_DEPTH = 0;
+const MAX_ENTRY_DEPTH = 4;
+
+// task store to store our tasks locally
+// KEY : taskId generated upon task form submit
+// VALUE : array containing [ (STRING) text , (INT) depth]
+let taskStore = {}
+
+let currentDepth = 0;
+const taskMargin = 20; // how many px to offset tasks by --> offset = currentDepth * taskMargin
 
 form.addEventListener("submit", (e) => {
     e.preventDefault(); // prevent the page from reloading when form is submitted
-    if(totalEntries < MAX_ENTRIES){
+    if(totalEntries < MAX_NUM_ENTRIES){
         removeEntryReminder();
         const text = textInput.value;
         const isImportant = importanceInput.checked;
         const isValidText = validateText(text);
         if(isValidText){
-            updateTodoList(text, isImportant);
-            saveToServer(text, isImportant);
+            const taskId = crypto.randomUUID();
+            console.log(taskId);
+            addTaskToDom(text, isImportant, taskId);
+            saveToServer(text, isImportant, taskId);
+
         }
     }else{
         showEntryReminder();
@@ -32,11 +45,52 @@ form.addEventListener("submit", (e) => {
 })
 
 // rejects/accepts input text 
-function validateText(text){
+function validateText(text, isImportant, taskId){
     // add some stuff 
     return true;
 }
-function saveToServer(text, isImportant){
+
+function updateTaskStore(text, isImportant, taskId){
+
+}
+
+// builds dom using taskStore --> includes id, text, isImportant, depth
+//  used server returns all tasks
+function buildDom(taskStore){
+
+}
+
+document.onkeydown = keydownListener; 
+console.log("starting depth : ", currentDepth);
+
+function keydownListener (evt) { 
+
+    if (!evt) evt = event; 
+
+    if (evt.shiftKey && evt.key === 'D') {
+        // check current depth and decrement if in range
+        if(currentDepth > MIN_ENTRY_DEPTH){
+            currentDepth--;
+            console.log("Current depth : ", currentDepth); 
+        }
+        else{
+            console.log("Out of range. Depth is ", currentDepth)
+        }
+
+    } else if (evt.shiftKey && evt.key === 'F') {
+        // check current depth and decrement if in range
+        if(currentDepth < MAX_ENTRY_DEPTH){
+            currentDepth++;
+            console.log("Current depth : ", currentDepth); 
+        }
+        else{
+            console.log("Out of range. Depth is ", currentDepth)
+        }
+    }
+
+}
+
+function saveToServer(text, isImportant, taskId){
     fetch("/api/task", {
         method:"POST",
         body:JSON.stringify({[text] : isImportant})
@@ -51,25 +105,26 @@ function removeEntryReminder(){
     entryReminder.style.visibility = "hidden"
 }
 
-function updateTodoList(text, isImportant){
+function addTaskToDom(text, isImportant, taskId){
     // check if we have hit max number of todos
     totalEntries++;
     console.log("adding todo", totalEntries)
     
-    let newTodo = makeTodo(text, isImportant);
+    let newTodo = generateTodoElement(text, isImportant);
     list.append(document.createElement("br")) // append a br so there is a line break between each new todo
-    list.appendChild(newTodo) 
+    
+    // add more here to specify the depth (another function probably)
+    list.appendChild(newTodo);
+
 }
 
-function makeTodo(text, isImportant) {
+function generateTodoElement(text, isImportant) {
     // make new element and append it to list with delete button
     let deleteButton = makeDeleteButton();
     let newTodo = document.createElement("div");
     newTodo.classList += "child";
     // if its important make text bold and add start
     newTodo.textContent = (isImportant) ? "\u2729 " + text : text;
-    newTodo.setAttribute("draggable","true" );
-    newTodo.style.cursor =  "move";
    
     newTodo.appendChild(deleteButton);
     attachDeleteBtnEventListener(deleteButton);
