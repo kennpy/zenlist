@@ -19,6 +19,28 @@ const MAX_ENTRY_DEPTH = 4;
 // VALUE : array containing [ (STRING) text , (INT) depth]
 let taskStore = {}
 
+// letting margin using depth    (idea)
+/*
+const marginLeftStep = 20; 
+for (let i = 1; i <= depth; i++)
+{ 
+    style.innerHTML += `.depth-${i} { margin-left: ${(i - 1) * marginLeftStep}px; }\n`; 
+}
+*/
+
+fetch("/api")
+    .then(data => data.text())
+    .then(data => data.split("}"))
+    .then(data => console.log(data))    
+    .then(data => {
+        data.forEach(elem => {
+            
+        })
+    })
+//.then((data) => data.json())
+    //.then(jsonData => console.log(jsonData))
+
+
 let currentDepth = 0;
 const taskMargin = 20; // how many px to offset tasks by --> offset = currentDepth * taskMargin
 
@@ -93,7 +115,7 @@ function keydownListener (evt) {
 function saveToServer(text, isImportant, taskId){
     fetch("/api/task", {
         method:"POST",
-        body:JSON.stringify({[text] : isImportant})
+        body:JSON.stringify({[text] : [isImportant, taskId, currentDepth]})
     }).then(res => console.log(res.json()))
 }
 
