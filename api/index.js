@@ -8,7 +8,7 @@ export default (req, res) => {
     const requestMethod = req.method;
     console.log(requestMethod)
     console.log(req.body)
-    res.send('{"HARDCODED EXAMPLE":[false,"978a8058-6376-4c80-86a1-9697be3b4509",0]}{"test":[false,"1a1326f2-c60d-4df1-ba92-65352b49c64c",0]}');
+    //res.send('{"HARDCODED EXAMPLE":[false,"978a8058-6376-4c80-86a1-9697be3b4509",0]}{"test":[false,"1a1326f2-c60d-4df1-ba92-65352b49c64c",0]}');
     switch (requestMethod) {
     case 'POST':
       
