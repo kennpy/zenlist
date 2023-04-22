@@ -13,6 +13,11 @@ let totalEntries = 0;
 const MAX_NUM_ENTRIES = 5;
 const MIN_ENTRY_DEPTH = 0;
 const MAX_ENTRY_DEPTH = 4;
+const MARGIN_LENGTH = 80;
+
+let currentDepth = 0;
+const taskMargin = 5; // how many px to offset tasks by --> offset = currentDepth * taskMargin
+
 
 // task store to store our tasks locally
 // KEY : taskId generated upon task form submit
@@ -30,19 +35,48 @@ for (let i = 1; i <= depth; i++)
 
 fetch("/api")
     .then(data => data.text())
-    .then(data => data.split("}"))
-    .then(data => console.log(data))    
+    .then(data => data.split("}"))    
     .then(data => {
-        data.forEach(elem => {
-            
-        })
+        console.log("after split ",data)
+        let indicesToRemove = [];
+            for(let i = 0; i < data.length; i++){
+              if(data[i] == ""){
+                indicesToRemove.push(i)
+              }
+            }
+            console.log(data, indicesToRemove)
+            const indiceLength = indicesToRemove.length;
+
+            for (let i = indiceLength -1; i >= 0; i--){
+              data.splice(indicesToRemove[i],1);
+            }
+        console.log("after empties are removed ",data)
+        
+        //data = data.slice(0,-1)
+        //console.log("after slice ",data)
+
+        for(let i = 0; i < data.length; i++){
+            //elem = elem.trim().replace('"', "")
+            //elem = elem.trim().replace('"', "")
+            //elem = elem.trim().replace('"', "")
+            //elem = elem.trim().replace('"', "")
+            data[i] = data[i] + "}";
+            console.log("after } is added ",data)
+        
+            console.log(data[i])
+            console.log(JSON.parse(data[i]))
+            let singleElement = JSON.parse(data[i])
+            for (const [key, value] of Object.entries(singleElement)) {
+                let word = key;
+                let isImportant = value[0];
+                let wordId = value[1];
+                let depth = value[2];
+                addTaskToDom(word,isImportant,wordId, depth)
+              }        
+            }
     })
 //.then((data) => data.json())
     //.then(jsonData => console.log(jsonData))
-
-
-let currentDepth = 0;
-const taskMargin = 20; // how many px to offset tasks by --> offset = currentDepth * taskMargin
 
 form.addEventListener("submit", (e) => {
     e.preventDefault(); // prevent the page from reloading when form is submitted
@@ -54,7 +88,7 @@ form.addEventListener("submit", (e) => {
         if(isValidText){
             const taskId = crypto.randomUUID();
             console.log(taskId);
-            addTaskToDom(text, isImportant, taskId);
+            addTaskToDom(text, isImportant, taskId, currentDepth);
             saveToServer(text, isImportant, taskId);
 
         }
@@ -127,14 +161,17 @@ function removeEntryReminder(){
     entryReminder.style.visibility = "hidden"
 }
 
-function addTaskToDom(text, isImportant, taskId){
+function addTaskToDom(text, isImportant, taskId, taskDepth){
     // check if we have hit max number of todos
     totalEntries++;
     console.log("adding todo", totalEntries)
     
     let newTodo = generateTodoElement(text, isImportant);
+    newTodo.dataset.id = taskId;
     list.append(document.createElement("br")) // append a br so there is a line break between each new todo
-    
+    console.log("depth ", taskDepth)
+    newTodo.style.marginLeft = `${MARGIN_LENGTH * taskDepth}px`;
+
     // add more here to specify the depth (another function probably)
     list.appendChild(newTodo);
 
@@ -164,9 +201,25 @@ function makeDeleteButton() {
 function attachDeleteBtnEventListener(btn) {
     btn.addEventListener("click", (e) => {
         e.preventDefault(); // dont reload page
-        console.log(btn.parentElement);
+        let wordId = btn.parentElement.dataset.id
         btn.parentElement.classList += " hidden"; // hide the todo now that its been deleted
-        btn.parentElement.nextElementSibling.remove(); // remove the br so no extra width is maintained
+        if(btn.parentElement.nextElementSibling){
+            btn.parentElement.nextElementSibling.remove(); // remove the br so no extra width is maintained
+        }
+
+        //wordId = 
+
+        const payload = {
+            "id": wordId
+        }
+        fetch("/api/task", {
+            method: "DELETE",
+            headers: {
+                "Content-Type": "application/json",
+                // 'Content-Type': 'application/x-www-form-urlencoded',
+              },
+            body: JSON.stringify(payload)
+        })
         totalEntries = totalEntries - 1;
     })
 }
