@@ -10,7 +10,7 @@ todoHeader.appendChild(entryReminder)
 entryReminder.style.visibility = "hidden"
 
 let totalEntries = 0;
-const MAX_NUM_ENTRIES = 5;
+//const MAX_NUM_ENTRIES = 5;
 const MIN_ENTRY_DEPTH = 0;
 const MAX_ENTRY_DEPTH = 4;
 const MARGIN_LENGTH = 80;
@@ -80,18 +80,17 @@ fetch("/api")
 
 form.addEventListener("submit", (e) => {
     e.preventDefault(); // prevent the page from reloading when form is submitted
-    if(totalEntries < MAX_NUM_ENTRIES){
-        removeEntryReminder();
-        const text = textInput.value;
-        const isImportant = importanceInput.checked;
-        const isValidText = validateText(text);
-        if(isValidText){
-            const taskId = crypto.randomUUID();
-            console.log(taskId);
-            addTaskToDom(text, isImportant, taskId, currentDepth);
-            saveToServer(text, isImportant, taskId);
+    removeEntryReminder();
+    const text = textInput.value;
+    const isImportant = importanceInput.checked;
+    const isValidText = validateText(text);
+    if(isValidText){
+        const taskId = crypto.randomUUID();
+        console.log(taskId);
+        addTaskToDom(text, isImportant, taskId, currentDepth);
+        saveToServer(text, isImportant, taskId);
 
-        }
+        
     }else{
         showEntryReminder();
     }
