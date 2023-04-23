@@ -34,7 +34,7 @@ export default (req, res) => {
         try{
             //res.send("trying to read file . . .")
             const original = "../../storage/tasks.txt"
-            const filepath = path.join(process.cwd(), 'tasks.txt'); 
+            const filepath = path.join(process.cwd(), 'files/tasks.txt'); 
             fs.readFileSync(filepath, 'utf8', (err, data) => {
                 if (err) {
                     console.error(err);
