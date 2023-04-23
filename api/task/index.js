@@ -17,8 +17,9 @@ export default (req, res) => {
         //const filepath = path.join(process.cwd(), 'storage'); 
         console.log(filepath)
         //fs.appendFile(filepath + "/tasks.txt", req.body, (err) => {
-        fs.appendFile(filepath + "/tasks.txt", req.body, (err) => {
-            if (err) {
+          //fs.appendFile(filepath + "/tasks.txt", req.body, (err) => {
+        fs.appendFile("/tmp" + "/tasks.txt", req.body, (err) => {
+              if (err) {
             console.error(err);
           }
           console.log("added new task")
@@ -33,8 +34,9 @@ export default (req, res) => {
           let dataToWrite;
           let willDeleteData = false;
           const filepath = path.join(process.cwd(), 'storage'); 
-          fs.readFile(filepath + "/tasks.txt", 'utf8', (err, data) => {
-            if (err) {
+          //fs.readFile(filepath + "/tasks.txt", 'utf8', (err, data) => {
+          fs.readFile("/tmp" + "/tasks.txt", 'utf8', (err, data) => {
+              if (err) {
             console.error(err);
             return;
             }
@@ -89,8 +91,9 @@ export default (req, res) => {
 
                   const filepath = path.join(process.cwd(), 'storage'); 
                   console.log(filepath)
-                  fs.writeFile(filepath + "/tasks.txt", data.join(""), (err) => {
-                    if (err) throw err;
+                  //fs.writeFile(filepath + "/tasks.txt", data.join(""), (err) => {
+                  fs.writeFile("/tmp" + "/tasks.txt", data.join(""), (err) => {
+                      if (err) throw err;
                     console.log('The file has been saved!');
                     res.send("added ", data);
                });
