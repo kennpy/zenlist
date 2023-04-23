@@ -30,7 +30,7 @@ export default (req, res) => {
         //     res.send("File does not exist")
         // }
         try{
-            fs.readFile('./storage/tasks.txt', 'utf8', (err, data) => {
+            fs.readFile('../storage/tasks.txt', 'utf8', (err, data) => {
             if (err) {
             console.error(err);
             res.send(err.message, err.code, err.stack);
