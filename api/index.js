@@ -33,6 +33,7 @@ export default (req, res) => {
         // }
         try{
             res.send("trying to read file . . .")
+            res.send("second time . . .")
             const original = "../../storage/tasks.txt"
             const filepath = path.join(process.cwd(), 'storage', 'tasks.txt'); 
             fs.readFileSync(filepath, 'utf8', (err, data) => {
