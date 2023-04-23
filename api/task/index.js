@@ -14,7 +14,9 @@ export default (req, res) => {
     switch (requestMethod) {
     case 'POST':
         // const body = JSON.parse(req.body);
-        fs.appendFile('./storage/tasks.txt', req.body, err => {
+        const filepath = path.join(process.cwd(), 'storage'); 
+        console.log(filepath)
+        fs.appendFile(filepath + "/tasks.txt", req.body, (err) => {
           if (err) {
             console.error(err);
           }
@@ -29,7 +31,8 @@ export default (req, res) => {
           console.log("reading file . . .")
           let dataToWrite;
           let willDeleteData = false;
-          fs.readFile('./storage/tasks.txt', 'utf8', async (err, data) => {
+          const filepath = path.join(process.cwd(), 'storage'); 
+          fs.readFile(filepath + "/tasks.txt", 'utf8', (err, data) => {
             if (err) {
             console.error(err);
             return;
