@@ -46,7 +46,7 @@ export default async (req, res) => {
             //     }
             // })
             const fileData = fs.readFile(filepath + "/tasks.txt", 'utf8');
-            res.send(fileData);
+            res.send(`${fileData}`);
 
         }
         catch (error) {
