@@ -84,6 +84,7 @@ export default (req, res) => {
                   console.log("after ", data.join(""))
 
                   const filepath = path.join(process.cwd(), 'storage'); 
+                  console.log(filepath)
                   fs.writeFile(filepath + "/tasks.txt", data.join(""), (err) => {
                     if (err) throw err;
                     console.log('The file has been saved!');
