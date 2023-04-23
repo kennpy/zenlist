@@ -39,7 +39,7 @@ export default async (req, res) => {
             fs.readFile("/tmp" + "/tasks.txt", 'utf8', (err, data) => {
                     if (err) {
                     console.error(err);
-                    res.send("inside")
+                    res.send(err)
                 //res.send(err.message, err.code, err.stack);
                 }
                 else{
