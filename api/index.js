@@ -37,14 +37,14 @@ export default (req, res) => {
             fs.readFileSync(filepath, 'utf8', (err, data) => {
             if (err) {
             console.error(err);
-            res.send(err)
+            res.send("inside")
             //res.send(err.message, err.code, err.stack);
             }
-            res.send(data);
+            res.send("data");
         });    
         }
         catch (error) {
-            res.send(err)
+            res.send("outside")
         }
 
     //   res.status(200).json({ message: 'You submitted a get (POST) request!'})
