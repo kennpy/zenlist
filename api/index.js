@@ -33,7 +33,8 @@ export default (req, res) => {
             fs.readFile('../../storage/tasks.txt', 'utf8', (err, data) => {
             if (err) {
             console.error(err);
-            res.send(err.message, err.code, err.stack);
+            res.send(currentDir)
+            //res.send(err.message, err.code, err.stack);
             }
             res.send(data);
         });    
