@@ -87,6 +87,7 @@ export default (req, res) => {
                   fs.writeFile(filepath + "/tasks.txt", data.join(""), (err) => {
                     if (err) throw err;
                     console.log('The file has been saved!');
+                    res.send("added ", data);
                });
               }
 
