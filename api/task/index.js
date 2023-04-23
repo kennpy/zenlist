@@ -1,7 +1,7 @@
 import { json } from 'body-parser';
 
 const fs = require('fs');
-var path = require('path')
+const path = require('path')
 
 const taskStore = {};
 
