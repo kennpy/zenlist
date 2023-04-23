@@ -82,7 +82,9 @@ export default (req, res) => {
                 //data = data + "}"
                   willDeleteData = true;
                   console.log("after ", data.join(""))
-                  fs.writeFile('./storage/tasks.txt', data.join(""), (err) => {
+
+                  const filepath = path.join(process.cwd(), 'storage'); 
+                  fs.writeFile(filepath + "/tasks.txt", data.join(""), (err) => {
                     if (err) throw err;
                     console.log('The file has been saved!');
                });
