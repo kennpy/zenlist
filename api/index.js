@@ -6,7 +6,7 @@ var currentDir = path.resolve(process.cwd());
 
 const taskStore = {};
 
-export default (req, res) => {
+export default async (req, res) => {
     const requestMethod = req.method;
     console.log(requestMethod)
     console.log(req.body)
@@ -34,17 +34,20 @@ export default (req, res) => {
         try{
             //res.send("trying to read file . . .")
             const original = "../../storage/tasks.txt"
-            const filepath = path.join(process.cwd(), 'storage/tasks.txt'); 
-            fs.readFileSync(filepath, 'utf8', (err, data) => {
-                if (err) {
-                    console.error(err);
-                    res.send("inside")
-                //res.send(err.message, err.code, err.stack);
-                }
-                else{
-                    res.send("data");
-                }
-            })
+            const filepath = path.join(process.cwd(), 'storage'); 
+            // fs.readFile(filepath + "/tasks.txt", 'utf8', (err, data) => {
+            //     if (err) {
+            //         console.error(err);
+            //         res.send("inside")
+            //     //res.send(err.message, err.code, err.stack);
+            //     }
+            //     else{
+            //         res.send("data");
+            //     }
+            // })
+            const fileData = fs.readFile(filepath + "/tasks.txt", 'utf8');
+            res.send(fileData);
+
         }
         catch (error) {
             res.send(error)
