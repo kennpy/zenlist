@@ -15,7 +15,7 @@ export default (req, res) => {
     case 'POST':
         // const body = JSON.parse(req.body);
         //const filepath = path.join(process.cwd(), 'storage'); 
-        console.log(filepath)
+        //console.log(filepath)
         //fs.appendFile(filepath + "/tasks.txt", req.body, (err) => {
           //fs.appendFile(filepath + "/tasks.txt", req.body, (err) => {
         fs.appendFile("/tmp" + "/tasks.txt", req.body, (err) => {
@@ -89,8 +89,8 @@ export default (req, res) => {
                   willDeleteData = true;
                   console.log("after ", data.join(""))
 
-                  const filepath = path.join(process.cwd(), 'storage'); 
-                  console.log(filepath)
+                  //const filepath = path.join(process.cwd(), 'storage'); 
+                  //console.log(filepath)
                   //fs.writeFile(filepath + "/tasks.txt", data.join(""), (err) => {
                   fs.writeFile("/tmp" + "/tasks.txt", data.join(""), (err) => {
                       if (err) throw err;
