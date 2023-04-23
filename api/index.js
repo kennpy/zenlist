@@ -2,6 +2,8 @@ const fs = require('fs');
 var path = require('path')
 var currentDir = path.resolve(process.cwd());
 
+
+
 const taskStore = {};
 
 export default (req, res) => {
@@ -30,7 +32,9 @@ export default (req, res) => {
         //     res.send("File does not exist")
         // }
         try{
-            fs.readFile('../../storage/tasks.txt', 'utf8', (err, data) => {
+            const original = "../../storage/tasks.txt"
+            const filepath = path.join(process.cwd(), 'storage', 'tasks.txt'); 
+            fs.readFileSync(filepath, 'utf8', (err, data) => {
             if (err) {
             console.error(err);
             res.send(currentDir)
