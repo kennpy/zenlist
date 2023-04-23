@@ -35,18 +35,16 @@ export default async (req, res) => {
             //res.send("trying to read file . . .")
             const original = "../../storage/tasks.txt"
             const filepath = path.join(process.cwd(), 'storage'); 
-            // fs.readFile(filepath + "/tasks.txt", 'utf8', (err, data) => {
-            //     if (err) {
-            //         console.error(err);
-            //         res.send("inside")
-            //     //res.send(err.message, err.code, err.stack);
-            //     }
-            //     else{
-            //         res.send("data");
-            //     }
-            // })
-            const fileData = fs.readFile(filepath + "/tasks.txt", 'utf8');
-            res.send(`${fileData}`);
+            fs.readFile(filepath + "/tasks.txt", 'utf8', (err, data) => {
+                if (err) {
+                    console.error(err);
+                    res.send("inside")
+                //res.send(err.message, err.code, err.stack);
+                }
+                else{
+                    res.send("data");
+                }
+            })
 
         }
         catch (error) {
