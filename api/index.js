@@ -36,7 +36,7 @@ export default async (req, res) => {
             const original = "../../storage/tasks.txt"
             //const filepath = path.join(process.cwd(), 'storage'); 
             //fs.readFile(filepath + "/tasks.txt", 'utf8', (err, data) => {
-            fs.appendFile("/tmp/tasks.txt", "", (err) => console.log(err));
+            fs.appendFile("/tmp/tasks.txt", "", (err) => console.log("error :",err));
             fs.readFile("/tmp" + "/tasks.txt", 'utf8', (err, data) => {
                     if (err) {
                     console.error(err);
