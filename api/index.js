@@ -42,7 +42,7 @@ export default async (req, res) => {
                 //res.send(err.message, err.code, err.stack);
                 }
                 else{
-                    res.send("data", data);
+                    res.send(data);
                 }
             })
 
