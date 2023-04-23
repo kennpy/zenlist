@@ -23,7 +23,7 @@ export default (req, res) => {
             console.error(err);
           }
           console.log("added new task")
-          res.send("added task")
+          //res.send("added task")
   // file written successfully
         });
         break
