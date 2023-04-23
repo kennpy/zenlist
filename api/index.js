@@ -34,17 +34,17 @@ export default (req, res) => {
         try{
             //res.send("trying to read file . . .")
             const original = "../../storage/tasks.txt"
-            const filepath = path.join(process.cwd(), 'storage', 'tasks.txt'); 
+            const filepath = path.join(process.cwd(), 'files', 'tasks.txt'); 
             fs.readFileSync(filepath, 'utf8', (err, data) => {
-            if (err) {
-                console.error(err);
-                res.send("inside")
-            //res.send(err.message, err.code, err.stack);
-            }
-            else{
-                res.send("data");
-            }
-        }) 
+                if (err) {
+                    console.error(err);
+                    res.send("inside")
+                //res.send(err.message, err.code, err.stack);
+                }
+                else{
+                    res.send("data");
+                }
+            })
         }
         catch (error) {
             res.send("outside")
