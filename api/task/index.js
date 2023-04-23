@@ -14,10 +14,11 @@ export default (req, res) => {
     switch (requestMethod) {
     case 'POST':
         // const body = JSON.parse(req.body);
-        const filepath = path.join(process.cwd(), 'storage'); 
+        //const filepath = path.join(process.cwd(), 'storage'); 
         console.log(filepath)
+        //fs.appendFile(filepath + "/tasks.txt", req.body, (err) => {
         fs.appendFile(filepath + "/tasks.txt", req.body, (err) => {
-          if (err) {
+            if (err) {
             console.error(err);
           }
           console.log("added new task")
