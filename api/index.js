@@ -32,17 +32,18 @@ export default (req, res) => {
         //     res.send("File does not exist")
         // }
         try{
-            res.send("trying to read file . . .")
-            res.send("second time . . .")
+            //res.send("trying to read file . . .")
             const original = "../../storage/tasks.txt"
             const filepath = path.join(process.cwd(), 'storage', 'tasks.txt'); 
             fs.readFileSync(filepath, 'utf8', (err, data) => {
             if (err) {
-            console.error(err);
-            res.send("inside")
+                console.error(err);
+                res.send("inside")
             //res.send(err.message, err.code, err.stack);
             }
-            res.send("data");
+            else{
+                res.send("data");
+            }
         }) 
         }
         catch (error) {
