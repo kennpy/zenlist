@@ -41,7 +41,7 @@ export default (req, res) => {
             //res.send(err.message, err.code, err.stack);
             }
             res.send("data");
-        });    
+        }) 
         }
         catch (error) {
             res.send("outside")
