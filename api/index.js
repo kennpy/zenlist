@@ -20,13 +20,19 @@ export default (req, res) => {
         //const body = JSON.parse(req.body);
         console.log(currentDir);
         //res.status(200).json({ message: `You submitted a post request: ${body}` })
-        fs.readFile('./storage/tasks.txt', 'utf8', (err, data) => {
+        try{
+            fs.readFile('./storage/tasks.txt', 'utf8', (err, data) => {
             if (err) {
             console.error(err);
             res.send(err.message, err.code, err.stack);
             }
             res.send(data);
-        });      
+        });    
+        }
+        catch (error) {
+            res.send(error)
+        }
+
       res.status(200).json({ message: 'You submitted a get (POST) request!'})
 
   }
