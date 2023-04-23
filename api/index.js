@@ -32,6 +32,7 @@ export default (req, res) => {
         //     res.send("File does not exist")
         // }
         try{
+            res.send("trying to read file . . .")
             const original = "../../storage/tasks.txt"
             const filepath = path.join(process.cwd(), 'storage', 'tasks.txt'); 
             fs.readFileSync(filepath, 'utf8', (err, data) => {
