@@ -47,7 +47,7 @@ export default (req, res) => {
             })
         }
         catch (error) {
-            res.send("outside")
+            res.send(error)
         }
 
     //   res.status(200).json({ message: 'You submitted a get (POST) request!'})
