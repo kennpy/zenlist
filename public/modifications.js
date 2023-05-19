@@ -37,6 +37,16 @@ const INPUT_FIELD_IDENTIFIER = ".current-input-field";
 
 // Set starting margin (so we knoew where to offset from)
 const compStyles = window.getComputedStyle(textInput);
+
+// Attach listener to first input (SPAGHETTI)
+// FIX : Have first input js generated --> appended rather than being in html already (so logic for input creation happens in one place instead of two)
+// textInput.addEventListener("keyup", (event) => {
+//   if (event.key === "Enter") {
+//     event.preventDefault();
+//     handleEnter(event);
+//   }
+// });
+
 //const DEFAULT_MARGIN_LEFT = compStyles.getPropertyValue("margin-left");
 const DEFAULT_MARGIN_LEFT = 20;
 console.log("DEFAULT_MARGIN_LEFT", DEFAULT_MARGIN_LEFT, "%");
@@ -46,9 +56,11 @@ function handleStartup() {
   getAllTasks().then((taskList) => {
     console.log("after parsing ", taskList);
     addTasksToDom(taskList);
-    appendInputElement();
+    makeThenAppendInputElement();
+    handleStartup.numberOfReloads = 1;
   });
 }
+handleStartup();
 
 form.addEventListener("submit", handleEnter);
 
@@ -89,6 +101,12 @@ function addTasksToDom(taskList) {
 function makeInput() {
   let newInput = document.createElement("input");
   newInput = setInputAttributes(newInput);
+  newInput.addEventListener("keyup", (event) => {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      handleEnter(event);
+    }
+  });
 
   return newInput;
 }
@@ -97,7 +115,7 @@ function setInputAttributes(newInput) {
   newInput.setAttribute("onblur", "this.focus()");
   newInput.setAttribute("type", "text");
   newInput.setAttribute("class", "rq-form-element");
-  newInput.setAttribute("class", "current-input-field");
+  newInput.setAttribute("class", "current-input-field cursor ");
   newInput.setAttribute("name", "todoInput");
   newInput.setAttribute("id", "text");
   newInput.setAttribute("minlength", "3");
@@ -119,9 +137,10 @@ function replaceInput(inputToReplace, taskElementToInsert) {
   }
   // else replace input with the new task we want there
   else {
-    // append task above input then delete input
+    // append task above input then delete input then add input below task we just made (happens in function which called this one)
     const parent = inputToReplace.parentNode;
-    console.log("parent ", parent);
+    parent.appendChild(taskElementToInsert);
+    //parent.removeChild(inputToReplace);
   }
 }
 
@@ -131,26 +150,31 @@ function extractInputValues(currentInput) {
   const isImportant = importanceInput.checked;
   const isValidText = validateText(text);
   let taskId;
-  if (isValidText) {
-    taskId = crypto.randomUUID();
-    console.log(taskId);
-  }
+  // if (isValidText) {
+  //   taskId = crypto.randomUUID();
+  //   console.log(taskId);
+  // }
   // clear text and bold color
   textInput.value = "";
   importanceInput.checked = false;
 
-  return { text, isImportant: false, taskId, taskDepth: currentDepth };
+  //return { text, isImportant: false, taskId, taskDepth: currentDepth };
+  return { text, isImportant: false, taskDepth: currentDepth };
 }
 
 // get the last element
 // append text input to child (or sibling)F
-function appendInputElement() {
-  const lastTask = getLastTask();
-  // append input to last task that was added
-  lastTask.appendChild(makeInput());
+function makeThenAppendInputElement() {
+  const root = getElementToAppendTo();
+  //const input = makeInput();
+  currentInput.parentElement.appendChild(newTodo);
+  newTodo.parentNode.insertBefore(currentInput, root.nextSibling);
+  currentInput.focus();
+  //root.appendChild(input);
+  currentInput.focus();
 }
 
-function getLastTask(identifier) {
+function getElementToAppendTo(identifier) {
   const allTasks = Array.from(document.querySelectorAll(identifier));
   console.log(allTasks);
   if (allTasks.length > 0) {
@@ -160,23 +184,34 @@ function getLastTask(identifier) {
   }
 }
 
-function handleEnter(e) {
+async function handleEnter(e) {
   // swap the current input field with a p tag of with the corresponding input value (p.class = "child")
   e.preventDefault();
   const currentInput = document.querySelector(INPUT_FIELD_IDENTIFIER);
-  const { text, isImportant, taskId, taskDepth } =
-    extractInputValues(currentInput);
-  saveToServer(text, isImportant, taskId);
+  const { text, isImportant, taskDepth } = extractInputValues(currentInput);
+
+  /*
+  description: String, -- EXTRACTED
+  //parentList: mongoose.SchemaTypes.ObjectId,
+  parentList: String, -- HARD CODED FOR NOW
+  depth: Number, -- GLOBAL SO NO ARGS NEEDED
+  isImportant: Boolean, -- HARD CODED FOR NOW
+  completed: Boolean, -- HARD CODED FOR NOW
+  */
+  // parenList
+  const { _id } = await saveToServer(text, isImportant, true);
 
   /*
           addTaskToDom(todo.description, todo.isImportant, todo._id, todo.depth);
   */
 
-  const newTodo = makeNewTodo(text, isImportant, taskId, taskDepth);
-  replaceInput(currentInput, newTodo);
-  const mostRecentlyMadeTask = getLastTask(".child");
-  console.log("most recent before adding", mostRecentlyMadeTask);
-  mostRecentlyMadeTask.appendChild(makeInput());
+  const newTodo = makeNewTodo(text, isImportant, _id, taskDepth);
+  console.log("newTodo ", newTodo);
+  // take the todo we want to add and add it to the end
+  // now that the task and the input are next to eachother we swap them so the input is at the end
+  currentInput.parentElement.appendChild(newTodo);
+  newTodo.parentNode.insertBefore(currentInput, newTodo.nextSibling);
+  currentInput.focus();
 }
 
 EventTarget.prototype.addEventListener = (() => {
@@ -260,8 +295,8 @@ function textInputChangeEventListener(evt) {
 
 // NOTE : taskId will be deprecated since id will be generated on backend. That way id stored in db matches what's
 // on frontend so we dont need to convert between the two
-function saveToServer(text, isImportant, completed) {
-  fetch("/tasks", {
+async function saveToServer(text, isImportant, completed) {
+  const ret = await fetch("/tasks", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -274,7 +309,8 @@ function saveToServer(text, isImportant, completed) {
       completed: false,
     }),
     //body: JSON.stringify({ [text]: [isImportant, taskId, currentDepth] }),
-  });
+  }).then((data) => data.json());
+  return ret;
 }
 
 function addTaskToDom(text, isImportant, taskId, taskDepth) {
@@ -333,30 +369,38 @@ function attachToggleCheckEventListener(element) {
 
 function attachDeleteBtnEventListener(btn) {
   btn.addEventListener("click", (e) => {
-    e.preventDefault(); // dont reload page
-    let wordId = btn.parentElement.dataset.id;
-    btn.parentElement.classList += " hidden"; // hide the todo now that its been deleted
-    if (btn.parentElement.nextElementSibling) {
-      btn.parentElement.nextElementSibling.remove(); // remove the br so no extra width is maintained
-    }
+    console.log("DELETE BUTTON CLICKED ", e);
+    // e.preventDefault(); // DISABLING THIS MAKES IT WORK AND IDK WHY !!
+    e.stopImmediatePropagation();
+    if (e.pointerId === 1) {
+      console.log("legitimate delete call");
+      let wordId = btn.parentElement.dataset.id;
+      // btn.parentElement.classList += " hidden"; // hide the todo now that its been deleted
+      // if (btn.parentElement.nextElementSibling) {
+      //   btn.parentElement.nextElementSibling.remove(); // remove the br so no extra width is maintained
+      // }
 
-    const deleteOptions = {
-      id: wordId,
-    };
-    fetch("/tasks", {
-      method: "DELETE",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(deleteOptions),
-    })
-      .then((deletedEntry) => deletedEntry.json())
-      .then((deletedEntry) => {
-        let taskToDelete = Array.from(
-          document.querySelectorAll("[data-id]")
-        ).filter((elem) => elem.dataset.id == deletedEntry.id);
-      });
-    totalEntries = totalEntries - 1;
+      const deleteOptions = {
+        id: wordId,
+      };
+      fetch("/tasks", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(deleteOptions),
+      })
+        .then((deletedEntry) => deletedEntry.json())
+        .then((deletedEntry) => {
+          let taskToDelete = Array.from(
+            document.querySelectorAll("[data-id]")
+          ).filter((elem) => elem.dataset.id == deletedEntry.id)[0];
+          btn.parentElement.parentElement.removeChild(taskToDelete);
+        });
+      totalEntries = totalEntries - 1;
+    } else {
+      console.log("illegitimate delete call");
+    }
   });
 }
 function getAllTasks() {

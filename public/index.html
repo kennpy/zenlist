@@ -9,43 +9,38 @@
   </head>
   <body>
     <h1>Zen List</h1>
-    <div class="right-side">
+    <div class="task-side">
       <section class="input">
-        <form action="/" method="POST">
-          <div>
-            <label for="todoInput">Add a todo : </label>
-          </div>
-          <div>
-            <label for="importantButton">Label as important : </label>
-            <input type="checkbox" name="importantButton" id="importance" />
-            <button type="submit">Submit</button>
-          </div>
-        </form>
+        <div>
+          <label for="todoInput">Add a todo : </label>
+        </div>
+        <div>
+          <label for="importantButton">Label as important : </label>
+          <input type="checkbox" name="importantButton" id="importance" />
+          <button type="submit">Submit</button>
+        </div>
       </section>
       <section class="storage">
         <h3>Current Todos</h3>
         <ol class="list">
           <form action="/" method="POST">
-            <div class="cursor">
-              <input
-                onblur="this.focus()"
-                type="text"
-                class="rq-form-element current-input-field"
-                name="todoInput"
-                id="text"
-                type="text"
-                minlength="3"
-                maxlength="100"
-                required
-                autofocus
-              />
-              <i></i>
-            </div>
+            <input
+              onblur="this.focus()"
+              type="text"
+              class="rq-form-element current-input-field cursor"
+              name="todoInput"
+              id="text"
+              type="text"
+              minlength="3"
+              maxlength="100"
+              required
+              autofocus
+            />
           </form>
         </ol>
       </section>
     </div>
-    <div class="left-side">
+    <div class="nav-side">
       <nav>
         <ul>
           <li><a href="https://www.google.com/">Google</a></li>

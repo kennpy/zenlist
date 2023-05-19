@@ -25,6 +25,7 @@ router.post("/", async (req, res) => {
   console.log(body);
   // make the task and send it back if working
   const taskJustMade = await TaskModel.create(body);
+  console.log("TASK JUST MADE : ", taskJustMade);
   res.status(200).json(taskJustMade);
 });
 
@@ -33,7 +34,11 @@ router.delete("/", async (req, res) => {
   console.log("deleting task with id ", req.body.id);
   const deletedTask = await TaskModel.findByIdAndDelete(req.body.id);
   console.log("deleted ", deletedTask);
-  res.json({ id: deletedTask._id });
+  if (deletedTask != null) {
+    res.json({ id: deletedTask._id });
+  } else {
+    throw new Error(`COULD NOT DELETE TASK WITH ID = ${req.body.id}`);
+  }
 });
 
 export default router;
