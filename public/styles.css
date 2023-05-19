@@ -22,8 +22,7 @@ h1 {
 input[type="text"] {
   background: transparent;
   border: none;
-  width: 25%;
-  margin-left: 25%;
+  width: 70%;
 }
 
 input[type="text"]:focus {

@@ -14,21 +14,6 @@
         <form action="/" method="POST">
           <div>
             <label for="todoInput">Add a todo : </label>
-            <div class="cursor">
-              <input
-                onblur="this.focus()"
-                type="text"
-                class="rq-form-element"
-                name="todoInput"
-                id="text"
-                type="text"
-                minlength="3"
-                maxlength="100"
-                required
-                autofocus
-              />
-              <i></i>
-            </div>
           </div>
           <div>
             <label for="importantButton">Label as important : </label>
@@ -39,7 +24,25 @@
       </section>
       <section class="storage">
         <h3>Current Todos</h3>
-        <ol class="list"></ol>
+        <ol class="list">
+          <form action="/" method="POST">
+            <div class="cursor">
+              <input
+                onblur="this.focus()"
+                type="text"
+                class="rq-form-element current-input-field"
+                name="todoInput"
+                id="text"
+                type="text"
+                minlength="3"
+                maxlength="100"
+                required
+                autofocus
+              />
+              <i></i>
+            </div>
+          </form>
+        </ol>
       </section>
     </div>
     <div class="left-side">
