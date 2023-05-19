@@ -1,0 +1,22 @@
+DATABSE FORMAT
+
+MongoDB with Mongoose ORM
+ - json FORMAT
+
+"Task" {
+     $id: int (generic id),
+     "user" : Users.$id --> LINK to User table
+     $tasks: Array (tasks)
+     "placement" : int -- how necessary it is (1-5 / Max Number of Lists)
+      { "task":"get milk", "page" : "first","completed": boolean, "important" : boolean}, . . , . 
+ }
+
+// for user authentication + authorization (later)
+// --> Right now use MY LOGIN on real server so data is saved --> skip login with cookie session or something
+ "Users" {
+     {
+         $id : int (generic id) 
+         "name" : string
+         "password" : int (hashed pass or something like that )
+     }
+ }

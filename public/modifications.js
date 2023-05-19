@@ -1,13 +1,28 @@
+/*
+Functionality for all specific tasks lists
+
+TODO : 
+    [  ]  hide shift-f + shift-d from text entry
+        [  ]  prevent default then 
+
+    [ ] Add check-off button for each task
+        [  ]  send delete query to backend
+        [  ]  query all the values
+    
+    [  ] add importance support (font as italics)
+        ^^ currently hard coded
+    
+    
+*/
+
+console.log("MODIFICATIONS IS BEING LOADED IN");
+
 const form = document.querySelector("form");
 const textInput = document.querySelector("#text");
 const importanceInput = document.querySelector("#importance");
 const list = document.querySelector(".list");
-const everyDeleteButton = document.querySelectorAll("button.delete")
-const todoHeader = document.querySelector(".storage > h3")
-const entryReminder = document.createElement("b")
-entryReminder.textContent = "Only 5 elements please"
-todoHeader.appendChild(entryReminder)
-entryReminder.style.visibility = "hidden"
+const everyDeleteButton = document.querySelectorAll("button.delete");
+const todoHeader = document.querySelector(".storage > h3");
 
 let totalEntries = 0;
 //const MAX_NUM_ENTRIES = 5;
@@ -17,208 +32,306 @@ const MARGIN_LENGTH = 80;
 
 let currentDepth = 0;
 const taskMargin = 5; // how many px to offset tasks by --> offset = currentDepth * taskMargin
+let validKeyPair = false;
+const INPUT_FIELD_IDENTIFIER = "current-input-field"
 
-
-// task store to store our tasks locally
-// KEY : taskId generated upon task form submit
-// VALUE : array containing [ (STRING) text , (INT) depth]
-let taskStore = {}
-
-// letting margin using depth    (idea)
-/*
-const marginLeftStep = 20; 
-for (let i = 1; i <= depth; i++)
-{ 
-    style.innerHTML += `.depth-${i} { margin-left: ${(i - 1) * marginLeftStep}px; }\n`; 
-}
-*/
-
-fetch("/api")
-    .then(data => data.text())
-    .then(data => data.split("}"))    
-    .then(data => {
-        console.log("after split ",data)
-        let indicesToRemove = [];
-            for(let i = 0; i < data.length; i++){
-              if(data[i] == ""){
-                indicesToRemove.push(i)
-              }
-            }
-            console.log(data, indicesToRemove)
-            const indiceLength = indicesToRemove.length;
-
-            for (let i = indiceLength -1; i >= 0; i--){
-              data.splice(indicesToRemove[i],1);
-            }
-        console.log("after empties are removed ",data)
-        
-        //data = data.slice(0,-1)
-        //console.log("after slice ",data)
-
-        for(let i = 0; i < data.length; i++){
-            //elem = elem.trim().replace('"', "")
-            //elem = elem.trim().replace('"', "")
-            //elem = elem.trim().replace('"', "")
-            //elem = elem.trim().replace('"', "")
-            data[i] = data[i] + "}";
-            console.log("after } is added ",data)
-        
-            console.log(data[i])
-            console.log(JSON.parse(data[i]))
-            let singleElement = JSON.parse(data[i])
-            for (const [key, value] of Object.entries(singleElement)) {
-                let word = key;
-                let isImportant = value[0];
-                let wordId = value[1];
-                let depth = value[2];
-                addTaskToDom(word,isImportant,wordId, depth)
-              }        
-            }
-    })
-//.then((data) => data.json())
-    //.then(jsonData => console.log(jsonData))
-
-form.addEventListener("submit", (e) => {
-    e.preventDefault(); // prevent the page from reloading when form is submitted
-    removeEntryReminder();
-    const text = textInput.value;
-    const isImportant = importanceInput.checked;
-    const isValidText = validateText(text);
-    if(isValidText){
-        const taskId = crypto.randomUUID();
-        console.log(taskId);
-        addTaskToDom(text, isImportant, taskId, currentDepth);
-        saveToServer(text, isImportant, taskId);
-
-        
-    }else{
-        showEntryReminder();
-    }
-    // clear text and bold color
-    textInput.value = "";
-    importanceInput.checked = false;
+function handleStartup(){
+  // fetch all tasks then append input to the bottom
+  getAllTasks()
+    .then((taskList) => {
+      console.log("after parsing ", taskList);
+      addTasksToDom(taskList);
+      appendInputElement();
 })
 
-// rejects/accepts input text 
-function validateText(text, isImportant, taskId){
-    // add some stuff 
-    return true;
+
+form.addEventListener("submit", (e) => {
+  e.preventDefault(); // prevent the page from reloading when form is submitted
+  const text = textInput.value;
+  const isImportant = importanceInput.checked;
+  const isValidText = validateText(text);
+  if (isValidText) {
+    const taskId = crypto.randomUUID();
+    console.log(taskId);
+    //addTaskToDom(text, isImportant, taskId, currentDepth);
+    saveToServer(text, isImportant, taskId); //
+  }
+  // clear text and bold color
+  textInput.value = "";
+  importanceInput.checked = false;
+})
+  
+// rejects/accepts input text
+function validateText(text, isImportant, taskId) {
+  // add some stuff
+  return true;
 }
 
-function updateTaskStore(text, isImportant, taskId){
+function addTasksToDom(taskList){
+  for (let task of taskList) {
+    // NOTE : We are assuming parenList is the view we are on, so we don't check for parent list
+    addTaskToDom(
+      task.description,
+      task.isImportant,
+      task._id,
+      task.depth,
+      task.completed
+    );
+  }
+}
+
+function makeInput(){
+/*
+  <input
+                onblur="this.focus()"
+                type="text"
+                class="rq-form-element" AND "current-input-field"
+                name="todoInput"
+                id="text"
+                type="text"
+                minlength="3"
+                maxlength="100"
+                required
+                autofocus
+              />
+              <i></i>
+  */
+}
+
+function swapElements(oldElement, newElement){
 
 }
 
-// builds dom using taskStore --> includes id, text, isImportant, depth
-//  used server returns all tasks
-function buildDom(taskStore){
+function getLastElement(className){
 
 }
 
-document.onkeydown = keydownListener; 
+function extractInputValues(currentInput){
+  e.preventDefault(); // prevent the page from reloading when form is submitted
+  const text = currentInput.value;
+  const importanceInput = document.get
+  const isImportant = importanceInput.checked;
+  const isValidText = validateText(text);
+  if (isValidText) {
+    const taskId = crypto.randomUUID();
+    console.log(taskId);
+  }
+  // clear text and bold color
+  textInput.value = "";
+  importanceInput.checked = false;
+
+
+}
+
+function handleEnter(){
+  // swap the current input field with a p tag of with the corresponding input value (p.class = "child")
+  const currentInput = document.querySelector(INPUT_FIELD_IDENTIFIER)
+  const {text, isImportant, taskId, taskDepth} = extractInputValues(currentInput)
+  saveToServer(text, isImportant, taskId); //
+  const todoToAdd = makeNewTodo(text, isImportant, taskId, taskDepth);
+  swapElements(currentInput, newTodo)
+  const todoJustAdded = getLastElement(".child")
+  document.appendChild(todoJustAdded, makeInput())
+}
+
+
+
+
+EventTarget.prototype.addEventListener = (() => {
+  const addEventListener = EventTarget.prototype.addEventListener;
+  return function () {
+    addEventListener.apply(this, arguments);
+    return this;
+  };
+})();
+  
+textInput
+  .addEventListener("keydown", (evt) => {
+    if (
+      (evt.shiftKey && evt.key === "D") ||
+      (evt.shiftKey && evt.key === "F")
+    ) {
+      validKeyPair = true;
+      if (evt.shiftKey && evt.key === "D") {
+        // check current depth and decrement if in range
+        if (currentDepth > MIN_ENTRY_DEPTH) {
+          currentDepth--;
+          console.log("Current depth : ", currentDepth);
+        } else {
+          console.log("Out of range. Depth is ", currentDepth);
+        }
+      } else if (evt.shiftKey && evt.key === "F") {
+        // check current depth and decrement if in range
+        if (currentDepth < MAX_ENTRY_DEPTH) {
+          currentDepth++;
+          console.log("Current depth : ", currentDepth);
+        } else {
+          console.log("Out of range. Depth is ", currentDepth);
+        }
+      }
+    }
+  })
+  .addEventListener("input", () => {
+    if (validKeyPair) {
+      const previousTextValue = textInput.value;
+      console.log(previousTextValue);
+      //textInput.value = previousTextValue.slice(0, -1);
+      validKeyPair = false;
+    }
+  });
+  
+
+textInput.addEventListener("keydown", textInputChangeEventListener);
+
 console.log("starting depth : ", currentDepth);
 
-function keydownListener (evt) { 
+function textInputChangeEventListener(evt) {
+  if ((evt.shiftKey && evt.key === "D") || (evt.shiftKey && evt.key === "F")) {
+    const previousTextValue = textInput.value;
+    console.log(previousTextValue);
+    textInput.value = previousTextValue.slice(0, -1);
 
-    if (!evt) evt = event; 
-
-    if (evt.shiftKey && evt.key === 'D') {
-        // check current depth and decrement if in range
-        if(currentDepth > MIN_ENTRY_DEPTH){
-            currentDepth--;
-            console.log("Current depth : ", currentDepth); 
-        }
-        else{
-            console.log("Out of range. Depth is ", currentDepth)
-        }
-
-    } else if (evt.shiftKey && evt.key === 'F') {
-        // check current depth and decrement if in range
-        if(currentDepth < MAX_ENTRY_DEPTH){
-            currentDepth++;
-            console.log("Current depth : ", currentDepth); 
-        }
-        else{
-            console.log("Out of range. Depth is ", currentDepth)
-        }
+    if (evt.shiftKey && evt.key === "D") {
+      // check current depth and decrement if in range
+      if (currentDepth > MIN_ENTRY_DEPTH) {
+        currentDepth--;
+        console.log("Current depth : ", currentDepth);
+      } else {
+        console.log("Out of range. Depth is ", currentDepth);
+      }
+    } else if (evt.shiftKey && evt.key === "F") {
+      // check current depth and decrement if in range
+      if (currentDepth < MAX_ENTRY_DEPTH) {
+        currentDepth++;
+        console.log("Current depth : ", currentDepth);
+      } else {
+        console.log("Out of range. Depth is ", currentDepth);
+      }
     }
-
+  }
 }
 
-function saveToServer(text, isImportant, taskId){
-    fetch("/api/task", {
-        method:"POST",
-        body:JSON.stringify({[text] : [isImportant, taskId, currentDepth]})
-    }).then(res => console.log(res.json()))
+// NOTE : taskId will be deprecated since id will be generated on backend. That way id stored in db matches what's
+// on frontend so we dont need to convert between the two
+function saveToServer(text, isImportant, completed) {
+  fetch("/tasks", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      description: text,
+      parentList: "test",
+      depth: currentDepth,
+      isImportant: isImportant,
+      completed: false,
+    }),
+    //body: JSON.stringify({ [text]: [isImportant, taskId, currentDepth] }),
+  })
+    .then((newTodo) => newTodo.json())
+    .then((todo) => {
+      if (todo != {}) {
+        addTaskToDom(todo.description, todo.isImportant, todo._id, todo.depth);
+      }
+    });
 }
 
-function showEntryReminder(){
-    entryReminder.style.visibility = "visible"
+function addTaskToDom(text, isImportant, taskId, taskDepth) {
+  // check if we have hit max number of todos
+  totalEntries++;
+  console.log("adding todo", totalEntries);
+
+  let newTodo = makeNewTodo(text, isImportant, taskId, taskDepth);
+  list.append(document.createElement("br")); // append a br so there is a line break between each new todo
+  console.log("depth ", taskDepth);
+
+  // add more here to specify the depth (another function probably)
+  list.appendChild(newTodo);
 }
 
-function removeEntryReminder(){
-    entryReminder.style.visibility = "hidden"
-}
+function makeNewTodo(text, isImportant, taskId, taskDepth) {
+  // make new element and append it to list with delete button
+  let deleteButton = makeDeleteButton();
+  let newTodo = document.createElement("div");
 
-function addTaskToDom(text, isImportant, taskId, taskDepth){
-    // check if we have hit max number of todos
-    totalEntries++;
-    console.log("adding todo", totalEntries)
-    
-    let newTodo = generateTodoElement(text, isImportant);
-    newTodo.dataset.id = taskId;
-    list.append(document.createElement("br")) // append a br so there is a line break between each new todo
-    console.log("depth ", taskDepth)
-    newTodo.style.marginLeft = `${MARGIN_LENGTH * taskDepth}px`;
+  newTodo.classList += "child";
+  newTodo.textContent = isImportant ? "\u2729 " + text : text;
+  newTodo.dataset.checked = false;
+  newTodo.dataset.id = taskId;
+  newTodo.style.marginLeft = `${MARGIN_LENGTH * taskDepth}px`;
 
-    // add more here to specify the depth (another function probably)
-    list.appendChild(newTodo);
-
-}
-
-function generateTodoElement(text, isImportant) {
-    // make new element and append it to list with delete button
-    let deleteButton = makeDeleteButton();
-    let newTodo = document.createElement("div");
-    newTodo.classList += "child";
-    // if its important make text bold and add start
-    newTodo.textContent = (isImportant) ? "\u2729 " + text : text;
-   
-    newTodo.appendChild(deleteButton);
-    attachDeleteBtnEventListener(deleteButton);
-    return newTodo;
+  newTodo.appendChild(deleteButton);
+  attachDeleteBtnEventListener(deleteButton);
+  attachToggleCheckEventListener(newTodo);
+  return newTodo;
 }
 
 function makeDeleteButton() {
-    let deleteButton = document.createElement("button");
-    deleteButton.classList += "delete";
-    deleteButton.textContent = "Delete";
-    deleteButton.style.marginLeft = "1%";
-    return deleteButton;
+  let deleteButton = document.createElement("button");
+  deleteButton.classList += "delete";
+  deleteButton.textContent = "Delete";
+  deleteButton.style.marginLeft = "1%";
+  return deleteButton;
+}
+
+function attachToggleCheckEventListener(element) {
+  element.addEventListener("click", (e) => {
+    e.preventDefault();
+    let taskStatus = element.dataset.checked == "true";
+    console.log("staus becoming ", !taskStatus);
+    let taskIsCompleted = !taskStatus;
+    if (taskIsCompleted) {
+      console.log("task completed");
+      element.style.textDecoration = "line-through";
+    } else {
+      console.log("task not done yet");
+      element.style.textDecoration = "none";
+    }
+  });
 }
 
 function attachDeleteBtnEventListener(btn) {
-    btn.addEventListener("click", (e) => {
-        e.preventDefault(); // dont reload page
-        let wordId = btn.parentElement.dataset.id
-        btn.parentElement.classList += " hidden"; // hide the todo now that its been deleted
-        if(btn.parentElement.nextElementSibling){
-            btn.parentElement.nextElementSibling.remove(); // remove the br so no extra width is maintained
-        }
+  btn.addEventListener("click", (e) => {
+    e.preventDefault(); // dont reload page
+    let wordId = btn.parentElement.dataset.id;
+    btn.parentElement.classList += " hidden"; // hide the todo now that its been deleted
+    if (btn.parentElement.nextElementSibling) {
+      btn.parentElement.nextElementSibling.remove(); // remove the br so no extra width is maintained
+    }
 
-        //wordId = 
-
-        const payload = {
-            "id": wordId
-        }
-        fetch("/api/task", {
-            method: "DELETE",
-            headers: {
-                "Content-Type": "application/json",
-                // 'Content-Type': 'application/x-www-form-urlencoded',
-              },
-            body: JSON.stringify(payload)
-        })
-        totalEntries = totalEntries - 1;
+    const deleteOptions = {
+      id: wordId,
+    };
+    fetch("/tasks", {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(deleteOptions),
     })
+      .then((deletedEntry) => deletedEntry.json())
+      .then((deletedEntry) => {
+        let taskToDelete = Array.from(
+          document.querySelectorAll("[data-id]")
+        ).filter((elem) => elem.dataset.id == deletedEntry.id);
+      });
+    totalEntries = totalEntries - 1;
+  });
 }
+  function getAllTasks() {
+    return fetch("/tasks")
+      .then((data) => data.json());
+  }
+
+  // get the last element
+      // append text input to child (or sibling)
+  function appendInputElement() {
+    
+    const allTasks = Array.from(
+      document.querySelectorAll("[data-id]")
+    );
+    const lastTask = allTasks[allTasks.length];
+    // append input to last task that was added
+    lastTask.appendChild();
+  }
+

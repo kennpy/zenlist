@@ -1,37 +1,58 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="./styles.css">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="./styles.css" />
     <title>Zen List</title>
-</head>
-<body>
+  </head>
+  <body>
     <h1>Zen List</h1>
-    <section class="input">
-    <form action="/" method="POST">
-        <div>
-        <label for="todoInput">Add a todo : </label>
-        <div class="cursor">
-            <input onblur="this.focus()" type="text" class="rq-form-element" name="todoInput" id="text" type="text" minlength="3" maxlength="100" required autofocus/>
-            <i></i>
-        </div>
-        
+    <div class="right-side">
+      <section class="input">
+        <form action="/" method="POST">
+          <div>
+            <label for="todoInput">Add a todo : </label>
+            <div class="cursor">
+              <input
+                onblur="this.focus()"
+                type="text"
+                class="rq-form-element"
+                name="todoInput"
+                id="text"
+                type="text"
+                minlength="3"
+                maxlength="100"
+                required
+                autofocus
+              />
+              <i></i>
+            </div>
+          </div>
+          <div>
+            <label for="importantButton">Label as important : </label>
+            <input type="checkbox" name="importantButton" id="importance" />
+            <button type="submit">Submit</button>
+          </div>
+        </form>
+      </section>
+      <section class="storage">
+        <h3>Current Todos</h3>
+        <ol class="list"></ol>
+      </section>
     </div>
-    <div>
-        <label for="importantButton">Label as important : </label>
-        <input type="checkbox" name="importantButton" id="importance">
-        <button type="submit">Submit</button>
+    <div class="left-side">
+      <nav>
+        <ul>
+          <li><a href="https://www.google.com/">Google</a></li>
+          <li><a href="http://www.amazon.com">Amazon</a></li>
+          <li><a href="http://www.zappos.com">Zappos</a></li>
+          <li><a href="http://www.threadless.com">Threadless</a></li>
+        </ul>
+      </nav>
     </div>
-    </form>
-</section>
-<section class="storage">
-    <h3>Current Todos</h3>
-    <ol class="list">
 
-    </ol>
-</section>
-    <script type="module" src="./modifications.js"></script>
-</body>
+    <script src="./modifications.js"></script>
+  </body>
 </html>
