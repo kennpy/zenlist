@@ -36,7 +36,7 @@ let validKeyPair = false;
 const INPUT_FIELD_IDENTIFIER = ".current-input-field";
 
 // Set starting margin (so we knoew where to offset from)
-const compStyles = window.getComputedStyle(textInput);
+//const compStyles = window.getComputedStyle(textInput);
 
 // Attach listener to first input (SPAGHETTI)
 // FIX : Have first input js generated --> appended rather than being in html already (so logic for input creation happens in one place instead of two)
@@ -55,8 +55,8 @@ function handleStartup() {
   // fetch all tasks then append input to the bottom
   getAllTasks().then((taskList) => {
     console.log("after parsing ", taskList);
-    addTasksToDom(taskList);
-    makeThenAppendInputElement();
+    addTasksToDom(taskList); // add tasks to list as siblings to input element
+    makeThenAppendInputElement(); // make a default input and append it to the list we just made
     handleStartup.numberOfReloads = 1;
   });
 }
@@ -101,12 +101,12 @@ function addTasksToDom(taskList) {
 function makeInput() {
   let newInput = document.createElement("input");
   newInput = setInputAttributes(newInput);
-  newInput.addEventListener("keyup", (event) => {
-    if (event.key === "Enter") {
-      event.preventDefault();
-      handleEnter(event);
-    }
-  });
+  // newInput.addEventListener("keyup", (event) => {
+  //   if (event.key === "Enter") {
+  //     event.preventDefault();
+  //     handleEnter(event);
+  //   }
+  //});
 
   return newInput;
 }
@@ -155,7 +155,7 @@ function extractInputValues(currentInput) {
   //   console.log(taskId);
   // }
   // clear text and bold color
-  textInput.value = "";
+  currentInput.value = "";
   importanceInput.checked = false;
 
   //return { text, isImportant: false, taskId, taskDepth: currentDepth };
@@ -165,13 +165,15 @@ function extractInputValues(currentInput) {
 // get the last element
 // append text input to child (or sibling)F
 function makeThenAppendInputElement() {
-  const root = getElementToAppendTo();
+  const root = getElementToAppendTo(INPUT_FIELD_IDENTIFIER);
   //const input = makeInput();
-  currentInput.parentElement.appendChild(newTodo);
-  newTodo.parentNode.insertBefore(currentInput, root.nextSibling);
-  currentInput.focus();
+  // PREVIOUS - currentInput
+  //newTodo.parentNode.insertBefore(textInput, newTodo.nextSibling);
+  const inputToAppendLast = makeInput();
+  form.appendChild(inputToAppendLast);
+  inputToAppendLast.focus();
   //root.appendChild(input);
-  currentInput.focus();
+  //currentInput.focus();
 }
 
 function getElementToAppendTo(identifier) {
@@ -187,6 +189,7 @@ function getElementToAppendTo(identifier) {
 async function handleEnter(e) {
   // swap the current input field with a p tag of with the corresponding input value (p.class = "child")
   e.preventDefault();
+  console.log(e);
   const currentInput = document.querySelector(INPUT_FIELD_IDENTIFIER);
   const { text, isImportant, taskDepth } = extractInputValues(currentInput);
 
@@ -222,17 +225,17 @@ EventTarget.prototype.addEventListener = (() => {
   };
 })();
 
-// update depth and shift input left / right
-textInput
-  .addEventListener("keydown", textInputChangeEventListener)
-  .addEventListener("input", () => {
-    if (validKeyPair) {
-      const previousTextValue = textInput.value;
-      console.log(previousTextValue);
-      //textInput.value = previousTextValue.slice(0, -1);
-      validKeyPair = false;
-    }
-  });
+// // update depth and shift input left / right
+// textInput
+//   .addEventListener("keydown", textInputChangeEventListener)
+//   .addEventListener("input", () => {
+//     if (validKeyPair) {
+//       const previousTextValue = textInput.value;
+//       console.log(previousTextValue);
+//       //textInput.value = previousTextValue.slice(0, -1);
+//       validKeyPair = false;
+//     }
+//   });
 
 //textInput.addEventListener("keydown", textInputChangeEventListener);
 
@@ -318,12 +321,12 @@ function addTaskToDom(text, isImportant, taskId, taskDepth) {
   totalEntries++;
   console.log("adding todo", totalEntries);
 
+  // PREVIOUS - currentInput
   let newTodo = makeNewTodo(text, isImportant, taskId, taskDepth);
-  list.append(document.createElement("br")); // append a br so there is a line break between each new todo
   console.log("depth ", taskDepth);
 
   // add more here to specify the depth (another function probably)
-  list.appendChild(newTodo);
+  form.appendChild(newTodo);
 }
 
 function makeNewTodo(text, isImportant, taskId, taskDepth) {
@@ -370,9 +373,15 @@ function attachToggleCheckEventListener(element) {
 function attachDeleteBtnEventListener(btn) {
   btn.addEventListener("click", (e) => {
     console.log("DELETE BUTTON CLICKED ", e);
-    // e.preventDefault(); // DISABLING THIS MAKES IT WORK AND IDK WHY !!
+    // \e.preventDefault(); // DISABLING THIS MAKES IT WORK AND IDK WHY !!
     e.stopImmediatePropagation();
-    if (e.pointerId === 1) {
+    e.preventDefault(); // ENABLING THIS MAKES IT WORK NOW AND IDK WHY (something to do w/ parent vs sibling relationship or something)
+    let pointerId = e.pointerId;
+    //if (form.childElementCount > 0 && e.pointerId == -1) pointerId = 1; // reset pointer id if there is already a task since it changes to -1 for somet reason
+    if (form.childElementCount > 0 && e.pointerId == -1) {
+      handleEnter(e);
+    }
+    if (pointerId === 1) {
       console.log("legitimate delete call");
       let wordId = btn.parentElement.dataset.id;
       // btn.parentElement.classList += " hidden"; // hide the todo now that its been deleted
