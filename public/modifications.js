@@ -21,13 +21,14 @@ const list = document.querySelector(".list");
 // CONSTANTS
 
 const MIN_TASK_DEPTH = 0;
-const MAX_TASK_DEPTH = 4;
+const MAX_TASK_DEPTH = 5;
+// TASK_DEPTH_CORRECTOR needed MAX_TASK_DEPTH and NUM_GRID_COLS are linked --> If we want to change styles we must change MAX_TASK_DEPTH
+// Adding a correction fixes this, since we can offset MAX_TASK_DEPTH to seperate the task-logic with view
+const TASK_DEPTH_CORRECTOR = 2;
 const NUM_GRID_COLS = 4 * MAX_TASK_DEPTH; // We double to offset. We only use half of the screen so we need double the columns to compensate / make sure things align
-const NUM_COL_OFFSET = NUM_GRID_COLS / 2;
-const MARGIN_LENGTH = 80;
-const DEFAULT_MARGIN_LEFT_SCALER = 7;
-const DEFAULT_MARGIN_LEFT = 20;
+const NUM_COL_OFFSET = NUM_GRID_COLS / 2; // Divide it by 2 so we offset to the middle
 const INPUT_FIELD_IDENTIFIER = ".current-input-field";
+const MIN_TASK_LENGTH = 3; // Minimum characters per task
 
 // TASK DATA
 
@@ -112,7 +113,6 @@ function makeTodoElement(text, isImportant, taskId, isCompleted) {
   newTodo.textContent = isImportant ? "\u2729 " + text : text;
   newTodo.dataset.checked = isCompleted;
   newTodo.dataset.id = taskId;
-  //newTodo.style.marginLeft = `${MARGIN_LENGTH * taskDepth}px`;
 
   newTodo.appendChild(deleteButton);
   attachDeleteBtnEventListener(deleteButton);
@@ -187,24 +187,27 @@ async function handleEnter(e) {
   const currentInput = document.querySelector(INPUT_FIELD_IDENTIFIER);
   const { text, parentList, isImportant, taskDepth, completed } =
     extractInputValues(currentInput);
-  currentInput.value = "";
-  importanceInput.checked = false;
 
-  const { _id } = await saveTaskToServer(
-    text,
-    parentList,
-    currentColumn,
-    isImportant,
-    completed
-  );
+  if (text.length >= MIN_TASK_LENGTH) {
+    currentInput.value = "";
+    importanceInput.checked = false;
 
-  const newTodo = makeTodoElement(text, isImportant, _id, taskDepth);
-  console.log("newTodo ", newTodo);
+    const { _id } = await saveTaskToServer(
+      text,
+      parentList,
+      currentColumn,
+      isImportant,
+      completed
+    );
 
-  // add task to dom and make sure input is below it
-  addTaskToDom(text, isImportant, _id, currentColumn, completed);
-  addInputToDom(currentInput, currentColumn, currentRow);
-  currentInput.focus();
+    const newTodo = makeTodoElement(text, isImportant, _id, taskDepth);
+    console.log("newTodo ", newTodo);
+
+    // add task to dom and make sure input is below it
+    addTaskToDom(text, isImportant, _id, currentColumn, completed);
+    addInputToDom(currentInput, currentColumn, currentRow);
+    currentInput.focus();
+  }
 }
 
 function getTextFromNode(node, addSpaces) {
@@ -239,10 +242,22 @@ EventTarget.prototype.addEventListener = (() => {
 })();
 
 function textInputChangeEventListener(evt) {
+  focusInput();
   if ((evt.shiftKey && evt.key === "D") || (evt.shiftKey && evt.key === "F")) {
     handleShift(evt);
   }
   window.scrollTo(0, 0);
+}
+
+// NOTE : focusInput is needed since input.focus() is not working --> IDK WHY
+function focusInput() {
+  const currentInput = document.querySelector(INPUT_FIELD_IDENTIFIER);
+  const currentText = currentInput.value;
+  console.log(currentInput, " ----> PARENT ---> ", currentInput.parent);
+  currentInput.parentElement.removeChild(currentInput);
+  const inputCopy = makeInputElement();
+  inputCopy.value = currentText;
+  addInputToDom(inputCopy, currentColumn, currentRow);
 }
 
 function handleShift(evt) {
@@ -256,37 +271,14 @@ function handleShift(evt) {
     // check current depth and decrement if in range
     if (currentColumn > MIN_TASK_DEPTH) {
       currentColumn--;
-      const newWidth = `${
-        //DEFAULT_MARGIN_LEFT + DEFAULT_MARGIN_LEFT_SCALER * currentDepth + 50
-        pixelOffsetToMiddle + MARGIN_LENGTH * currentColumn
-      }%`;
-      // NOTE : THIS IS SPAGHETTI AND SHOULD BE FIXED
-      // ^^ Check if we are at starting depth and hard code it in (prevent wrong margin on left)
       currentInput.parentElement.removeChild(currentInput);
       const shiftedInput = makeInputElement();
       addInputToDom(shiftedInput, currentColumn, currentRow);
-      if (currentColumn != 0) {
-        //norm in pixels - MARGIN_LENGTH * taskDepth
-        // add ^^ + 50%
-        console.log("width : ", currentInput.style.width);
-        //currentInput.style.marginLeft = newWidth;
-      } else {
-        console.log("setting margin to default");
-        //currentInput.style.marginLeft = `${DEFAULT_MARGIN_LEFT}`;
-        //currentInput.style.marginLeft = `${pixelOffsetToMiddle}px`;
-      }
-    } else {
     }
   } else if (evt.shiftKey && evt.key === "F") {
     // check current depth and decrement if in range
-    if (currentColumn < MAX_TASK_DEPTH) {
+    if (currentColumn < MAX_TASK_DEPTH - TASK_DEPTH_CORRECTOR) {
       currentColumn++;
-      //currentInput.style.marginLeft = `${MARGIN_LENGTH * currentDepth}px`;
-      const newWidth = `${
-        //DEFAULT_MARGIN_LEFT + DEFAULT_MARGIN_LEFT_SCALER * currentDepth + 50
-        pixelOffsetToMiddle + MARGIN_LENGTH * currentColumn
-      }%`;
-      //currentInput.style.marginLeft = newWidth;
       currentInput.parentElement.removeChild(currentInput);
       const shiftedInput = makeInputElement();
       addInputToDom(shiftedInput, currentColumn, currentRow);
