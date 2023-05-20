@@ -1,74 +1,72 @@
 /*
 Functionality for all specific tasks lists
+Important
+TODO : Change task creation so it relies on GRID
 
-TODO : 
-    [  ]  hide shift-f + shift-d from text entry
-        [  ]  prevent default then 
-
-    [ ] Add check-off button for each task
-        [  ]  send delete query to backend
-        [  ]  query all the values
-    
-    [  ] add importance support (font as italics)
-        ^^ currently hard coded
-    
+Less important
+TODO : find alternate shift-f + shift-d that shows nothing
+TODO : Add check-off BOX that relies on TYPING to ADD X to BOX --> Satisfy
+TODO : Add 'importance' support (font as italics)
     
 */
 
-console.log("MODIFICATIONS IS BEING LOADED IN");
+// DOM ELEMENTS
 
+//const textInput = document.querySelector("#text");
 const form = document.querySelector("form");
-const textInput = document.querySelector("#text");
 const importanceInput = document.querySelector("#importance");
+const container = document.getElementById("container");
 const list = document.querySelector(".list");
-const everyDeleteButton = document.querySelectorAll("button.delete");
-const todoHeader = document.querySelector(".storage > h3");
 
-let totalEntries = 0;
-//const MAX_NUM_ENTRIES = 5;
-const MIN_ENTRY_DEPTH = 0;
-const MAX_ENTRY_DEPTH = 4;
+// CONSTANTS
+
+const MIN_TASK_DEPTH = 0;
+const MAX_TASK_DEPTH = 4;
+const NUM_GRID_COLS = 4 * MAX_TASK_DEPTH; // We double to offset. We only use half of the screen so we need double the columns to compensate / make sure things align
+const NUM_COL_OFFSET = NUM_GRID_COLS / 2;
 const MARGIN_LENGTH = 80;
-
-let currentDepth = 0;
-const taskMargin = 5; // how many px to offset tasks by --> offset = currentDepth * taskMargin
-let validKeyPair = false;
+const DEFAULT_MARGIN_LEFT_SCALER = 7;
+const DEFAULT_MARGIN_LEFT = 20;
 const INPUT_FIELD_IDENTIFIER = ".current-input-field";
 
-// Set starting margin (so we knoew where to offset from)
-//const compStyles = window.getComputedStyle(textInput);
+// TASK DATA
 
-// Attach listener to first input (SPAGHETTI)
-// FIX : Have first input js generated --> appended rather than being in html already (so logic for input creation happens in one place instead of two)
-// textInput.addEventListener("keyup", (event) => {
-//   if (event.key === "Enter") {
-//     event.preventDefault();
-//     handleEnter(event);
-//   }
-// });
+let currentColumn = 0;
+let currentRow = 1;
 
-//const DEFAULT_MARGIN_LEFT = compStyles.getPropertyValue("margin-left");
-const DEFAULT_MARGIN_LEFT = 20;
-console.log("DEFAULT_MARGIN_LEFT", DEFAULT_MARGIN_LEFT, "%");
+// STARTUP
 
 function handleStartup() {
   // fetch all tasks then append input to the bottom
   getAllTasks().then((taskList) => {
     console.log("after parsing ", taskList);
-    addTasksToDom(taskList); // add tasks to list as siblings to input element
-    makeThenAppendInputElement(); // make a default input and append it to the list we just made
-    handleStartup.numberOfReloads = 1;
+    const inputToAppend = makeInputElement();
+    configureGrid();
+    addTasksToDom(taskList);
+    addInputToDom(inputToAppend, currentColumn, currentRow);
   });
 }
 handleStartup();
 
-form.addEventListener("submit", handleEnter);
+// GUI
 
-// rejects/accepts input text
-function validateText(text, isImportant, taskId) {
-  // add some stuff
-  return true;
+// make grid based on specified depth
+function configureGrid() {
+  // Make table based on depth of tasks we can nest
+  function makeRows(rows, cols) {
+    container.style.setProperty("--grid-rows", rows);
+    container.style.setProperty("--grid-cols", cols);
+    for (c = 0; c < rows * cols; c++) {
+      let cell = document.createElement("tr");
+      cell.innerText = c + 1;
+      container.appendChild(cell).className = "grid-item";
+    }
+  }
+
+  makeRows(1, NUM_GRID_COLS);
 }
+
+// GUI -> HELPERS
 
 function addTasksToDom(taskList) {
   for (let task of taskList) {
@@ -83,30 +81,61 @@ function addTasksToDom(taskList) {
   }
 }
 
-/* MAKING THIS
-  <input
-                onblur="this.focus()"
-                type="text"
-                class="rq-form-element" AND "current-input-field"
-                name="todoInput"
-                id="text"
-                minlength="3"
-                maxlength="100"
-                required
-                autofocus
-              />
-              <i></i>
-  */
+function addTaskToDom(text, isImportant, taskId, taskDepth, isCompleted) {
+  currentRow++;
 
-function makeInput() {
+  // Add new row to table
+  let newTodo = makeTodoElement(
+    text,
+    isImportant,
+    taskId,
+    taskDepth,
+    isCompleted
+  );
+
+  // TODO : CHANGER HERE to append based on GRID
+  newTodo.style.setProperty("grid-column-start", NUM_COL_OFFSET + taskDepth);
+  newTodo.style.setProperty("grid-row-start", currentRow);
+  container.appendChild(newTodo);
+}
+
+function addInputToDom(input, colStart, rowStart) {
+  input.style.setProperty("grid-column-start", NUM_COL_OFFSET + colStart);
+  input.style.setProperty("grid-row-start", rowStart + 1); // add one to always add below recent task
+  container.appendChild(input);
+  currentRow++;
+  input.focus();
+}
+
+function makeTodoElement(text, isImportant, taskId, taskDepth) {
+  // make new element and append it to list with delete button
+  let deleteButton = makeDeleteButton();
+  let newTodo = document.createElement("div");
+
+  newTodo.classList += "child";
+  newTodo.textContent = isImportant ? "\u2729 " + text : text;
+  newTodo.dataset.checked = false;
+  newTodo.dataset.id = taskId;
+  //newTodo.style.marginLeft = `${MARGIN_LENGTH * taskDepth}px`;
+
+  newTodo.appendChild(deleteButton);
+  attachDeleteBtnEventListener(deleteButton);
+  attachToggleCheckEventListener(newTodo);
+  return newTodo;
+}
+
+function makeDeleteButton() {
+  let deleteButton = document.createElement("button");
+  deleteButton.classList += "delete";
+  deleteButton.textContent = "Delete";
+  deleteButton.style.marginLeft = "10%";
+  return deleteButton;
+}
+
+function makeInputElement() {
   let newInput = document.createElement("input");
   newInput = setInputAttributes(newInput);
-  // newInput.addEventListener("keyup", (event) => {
-  //   if (event.key === "Enter") {
-  //     event.preventDefault();
-  //     handleEnter(event);
-  //   }
-  //});
+  newInput.addEventListener("keyup", textInputChangeEventListener);
 
   return newInput;
 }
@@ -123,57 +152,28 @@ function setInputAttributes(newInput) {
   newInput.setAttribute("require", "true");
   newInput.setAttribute("autofocus", "true");
 
+  newInput.style.marginLeft = `${50}%`;
+
   const cursor = document.createElement("i");
   newInput.appendChild(cursor);
 
   return newInput;
 }
 
-// replace input without swapping
-function replaceInput(inputToReplace, taskElementToInsert) {
-  // if the input does not exist simply add element to top of list
-  if (inputToReplace == undefined) {
-    list.appendChild(taskElementToInsert);
-  }
-  // else replace input with the new task we want there
-  else {
-    // append task above input then delete input then add input below task we just made (happens in function which called this one)
-    const parent = inputToReplace.parentNode;
-    parent.appendChild(taskElementToInsert);
-    //parent.removeChild(inputToReplace);
-  }
-}
-
 function extractInputValues(currentInput) {
   const text = currentInput.value;
-  // const importanceInput = document.get
   const isImportant = importanceInput.checked;
-  const isValidText = validateText(text);
-  let taskId;
-  // if (isValidText) {
-  //   taskId = crypto.randomUUID();
-  //   console.log(taskId);
-  // }
-  // clear text and bold color
+
   currentInput.value = "";
   importanceInput.checked = false;
 
-  //return { text, isImportant: false, taskId, taskDepth: currentDepth };
-  return { text, isImportant: false, taskDepth: currentDepth };
-}
-
-// get the last element
-// append text input to child (or sibling)F
-function makeThenAppendInputElement() {
-  const root = getElementToAppendTo(INPUT_FIELD_IDENTIFIER);
-  //const input = makeInput();
-  // PREVIOUS - currentInput
-  //newTodo.parentNode.insertBefore(textInput, newTodo.nextSibling);
-  const inputToAppendLast = makeInput();
-  form.appendChild(inputToAppendLast);
-  inputToAppendLast.focus();
-  //root.appendChild(input);
-  //currentInput.focus();
+  return {
+    text,
+    parentList: "test",
+    isImportant: false,
+    taskDepth: currentColumn,
+    completed: false,
+  };
 }
 
 function getElementToAppendTo(identifier) {
@@ -190,33 +190,31 @@ async function handleEnter(e) {
   // swap the current input field with a p tag of with the corresponding input value (p.class = "child")
   e.preventDefault();
   console.log(e);
+  // get input values so we can make a task from it
   const currentInput = document.querySelector(INPUT_FIELD_IDENTIFIER);
-  const { text, isImportant, taskDepth } = extractInputValues(currentInput);
+  const { text, parentList, isImportant, taskDepth, completed } =
+    extractInputValues(currentInput);
 
-  /*
-  description: String, -- EXTRACTED
-  //parentList: mongoose.SchemaTypes.ObjectId,
-  parentList: String, -- HARD CODED FOR NOW
-  depth: Number, -- GLOBAL SO NO ARGS NEEDED
-  isImportant: Boolean, -- HARD CODED FOR NOW
-  completed: Boolean, -- HARD CODED FOR NOW
-  */
-  // parenList
-  const { _id } = await saveToServer(text, isImportant, true);
+  const { _id } = await saveToServer(
+    text,
+    parentList,
+    currentColumn,
+    isImportant,
+    completed
+  );
 
-  /*
-          addTaskToDom(todo.description, todo.isImportant, todo._id, todo.depth);
-  */
-
-  const newTodo = makeNewTodo(text, isImportant, _id, taskDepth);
+  const newTodo = makeTodoElement(text, isImportant, _id, taskDepth);
   console.log("newTodo ", newTodo);
-  // take the todo we want to add and add it to the end
-  // now that the task and the input are next to eachother we swap them so the input is at the end
-  currentInput.parentElement.appendChild(newTodo);
-  newTodo.parentNode.insertBefore(currentInput, newTodo.nextSibling);
+
+  // add task to dom and make sure input is below it
+  addTaskToDom(text, isImportant, _id, currentColumn, completed);
+  addInputToDom(currentInput, currentColumn, currentRow);
   currentInput.focus();
 }
 
+// EVENT LISTENERS
+
+// Add return value for event listeners to allow listener chaining (MAY NOT NEED)
 EventTarget.prototype.addEventListener = (() => {
   const addEventListener = EventTarget.prototype.addEventListener;
   return function () {
@@ -225,133 +223,58 @@ EventTarget.prototype.addEventListener = (() => {
   };
 })();
 
-// // update depth and shift input left / right
-// textInput
-//   .addEventListener("keydown", textInputChangeEventListener)
-//   .addEventListener("input", () => {
-//     if (validKeyPair) {
-//       const previousTextValue = textInput.value;
-//       console.log(previousTextValue);
-//       //textInput.value = previousTextValue.slice(0, -1);
-//       validKeyPair = false;
-//     }
-//   });
-
-//textInput.addEventListener("keydown", textInputChangeEventListener);
-
-console.log("starting depth : ", currentDepth);
-
 function textInputChangeEventListener(evt) {
   if ((evt.shiftKey && evt.key === "D") || (evt.shiftKey && evt.key === "F")) {
-    const previousTextValue = textInput.value;
-    console.log(previousTextValue);
-    textInput.value = previousTextValue.slice(0, -1);
-    const currentInput = document.querySelector(INPUT_FIELD_IDENTIFIER);
+    handleShift(evt);
+  }
+  window.scrollTo(0, 0);
+}
 
-    if (evt.shiftKey && evt.key === "D") {
-      // check current depth and decrement if in range
-      if (currentDepth > MIN_ENTRY_DEPTH) {
-        currentDepth--;
-        // NOTE : THIS IS SPAGHETTI AND SHOULD BE FIXED
-        // ^^ Check if we are at starting depth and hard code it in (prevent wrong margin on left)
-        if (currentDepth != 0) {
-          console.log(
-            "Adding ",
-            DEFAULT_MARGIN_LEFT,
-            " with ",
-            5 * currentDepth,
-            "%"
-          );
-          currentInput.style.marginLeft = `${
-            DEFAULT_MARGIN_LEFT + 10 * currentDepth
-          }%`;
-        } else {
-          console.log("setting margin to default");
-          currentInput.style.marginLeft = `${DEFAULT_MARGIN_LEFT}`;
-        }
-        console.log("Current depth : ", currentDepth);
+function handleShift(evt) {
+  const currentInput = document.querySelector(INPUT_FIELD_IDENTIFIER);
+  const previousTextValue = currentInput.value;
+  console.log(previousTextValue);
+  currentInput.value = previousTextValue.slice(0, -1);
+  const pixelOffsetToMiddle = currentInput.clientWidth / 2;
+  console.log("pixels to middle ", pixelOffsetToMiddle);
+  if (evt.shiftKey && evt.key === "D") {
+    // check current depth and decrement if in range
+    if (currentColumn > MIN_TASK_DEPTH) {
+      currentColumn--;
+      const newWidth = `${
+        //DEFAULT_MARGIN_LEFT + DEFAULT_MARGIN_LEFT_SCALER * currentDepth + 50
+        pixelOffsetToMiddle + MARGIN_LENGTH * currentColumn
+      }%`;
+      // NOTE : THIS IS SPAGHETTI AND SHOULD BE FIXED
+      // ^^ Check if we are at starting depth and hard code it in (prevent wrong margin on left)
+      if (currentColumn != 0) {
+        //norm in pixels - MARGIN_LENGTH * taskDepth
+        // add ^^ + 50%
+        console.log("width : ", currentInput.style.width);
+        currentInput.style.marginLeft = newWidth;
       } else {
-        console.log("Out of range. Depth is ", currentDepth);
+        console.log("setting margin to default");
+        //currentInput.style.marginLeft = `${DEFAULT_MARGIN_LEFT}`;
+        currentInput.style.marginLeft = `${pixelOffsetToMiddle}px`;
       }
-    } else if (evt.shiftKey && evt.key === "F") {
-      // check current depth and decrement if in range
-      if (currentDepth < MAX_ENTRY_DEPTH) {
-        currentDepth++;
-        //currentInput.style.marginLeft = `${MARGIN_LENGTH * currentDepth}px`;
-        console.log(
-          "Adding ",
-          DEFAULT_MARGIN_LEFT,
-          " with ",
-          10 * currentDepth,
-          "%"
-        );
-        currentInput.style.marginLeft = `${
-          DEFAULT_MARGIN_LEFT + 5 * currentDepth
-        }%`;
-        console.log("Current depth : ", currentDepth);
-      } else {
-        console.log("Out of range. Depth is ", currentDepth);
-      }
+    } else {
+    }
+  } else if (evt.shiftKey && evt.key === "F") {
+    // check current depth and decrement if in range
+    if (currentColumn < MAX_TASK_DEPTH) {
+      currentColumn++;
+      //currentInput.style.marginLeft = `${MARGIN_LENGTH * currentDepth}px`;
+      const newWidth = `${
+        //DEFAULT_MARGIN_LEFT + DEFAULT_MARGIN_LEFT_SCALER * currentDepth + 50
+        pixelOffsetToMiddle + MARGIN_LENGTH * currentColumn
+      }%`;
+      currentInput.style.marginLeft = newWidth;
+      console.log("Current depth : ", currentColumn);
+    } else {
+      console.log("Out of range. Depth is ", currentColumn);
     }
   }
-}
-
-// NOTE : taskId will be deprecated since id will be generated on backend. That way id stored in db matches what's
-// on frontend so we dont need to convert between the two
-async function saveToServer(text, isImportant, completed) {
-  const ret = await fetch("/tasks", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      description: text,
-      parentList: "test",
-      depth: currentDepth,
-      isImportant: isImportant,
-      completed: false,
-    }),
-    //body: JSON.stringify({ [text]: [isImportant, taskId, currentDepth] }),
-  }).then((data) => data.json());
-  return ret;
-}
-
-function addTaskToDom(text, isImportant, taskId, taskDepth) {
-  // check if we have hit max number of todos
-  totalEntries++;
-  console.log("adding todo", totalEntries);
-
-  // PREVIOUS - currentInput
-  let newTodo = makeNewTodo(text, isImportant, taskId, taskDepth);
-  console.log("depth ", taskDepth);
-
-  // add more here to specify the depth (another function probably)
-  form.appendChild(newTodo);
-}
-
-function makeNewTodo(text, isImportant, taskId, taskDepth) {
-  // make new element and append it to list with delete button
-  let deleteButton = makeDeleteButton();
-  let newTodo = document.createElement("div");
-
-  newTodo.classList += "child";
-  newTodo.textContent = isImportant ? "\u2729 " + text : text;
-  newTodo.dataset.checked = false;
-  newTodo.dataset.id = taskId;
-  newTodo.style.marginLeft = `${MARGIN_LENGTH * taskDepth}px`;
-
-  newTodo.appendChild(deleteButton);
-  attachDeleteBtnEventListener(deleteButton);
-  attachToggleCheckEventListener(newTodo);
-  return newTodo;
-}
-
-function makeDeleteButton() {
-  let deleteButton = document.createElement("button");
-  deleteButton.classList += "delete";
-  deleteButton.textContent = "Delete";
-  deleteButton.style.marginLeft = "1%";
-  return deleteButton;
+  window.scrollTo(0, 0);
 }
 
 function attachToggleCheckEventListener(element) {
@@ -360,19 +283,33 @@ function attachToggleCheckEventListener(element) {
     let taskStatus = element.dataset.checked == "true";
     console.log("staus becoming ", !taskStatus);
     let taskIsCompleted = !taskStatus;
-    if (taskIsCompleted) {
-      console.log("task completed");
-      element.style.textDecoration = "line-through";
-    } else {
-      console.log("task not done yet");
-      element.style.textDecoration = "none";
-    }
+    handleTaskStatus(element, taskIsCompleted);
   });
+}
+
+function handleTaskStatus(element, taskIsCompleted) {
+  const checkedStyles = {
+    complete: {
+      checkedValue: true,
+      textDecoration: "line-through",
+    },
+    incomplete: {
+      checkedValue: false,
+      textDecoration: "none",
+    },
+  };
+  const { checkedValue, textDecoration } = taskIsCompleted
+    ? checkedStyles.complete
+    : checkedStyles.incomplete;
+
+  element.dataset.checked = checkedValue;
+  element.style.textDecoration = textDecoration;
 }
 
 function attachDeleteBtnEventListener(btn) {
   btn.addEventListener("click", (e) => {
     console.log("DELETE BUTTON CLICKED ", e);
+    currentRow--;
     // \e.preventDefault(); // DISABLING THIS MAKES IT WORK AND IDK WHY !!
     e.stopImmediatePropagation();
     e.preventDefault(); // ENABLING THIS MAKES IT WORK NOW AND IDK WHY (something to do w/ parent vs sibling relationship or something)
@@ -406,12 +343,36 @@ function attachDeleteBtnEventListener(btn) {
           ).filter((elem) => elem.dataset.id == deletedEntry.id)[0];
           btn.parentElement.parentElement.removeChild(taskToDelete);
         });
-      totalEntries = totalEntries - 1;
+      currentRow = currentRow - 1;
     } else {
       console.log("illegitimate delete call");
     }
   });
 }
+
+form.addEventListener("submit", handleEnter);
+
+// AJAX
+
+// NOTE : taskId will be deprecated since id will be generated on backend. That way id stored in db matches what's
+// on frontend so we dont need to convert between the two
+async function saveToServer(text, parentList, depth, isImportant, isCompleted) {
+  const ret = await fetch("/tasks", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      description: text,
+      parentList: parentList,
+      depth: depth,
+      isImportant: isImportant,
+      completed: isCompleted,
+    }),
+  }).then((data) => data.json());
+  return ret;
+}
+
 function getAllTasks() {
   return fetch("/tasks").then((data) => data.json());
 }

@@ -1,7 +1,13 @@
+:root {
+  --main-bg-color: #f9f9f5;
+  --nav-bg-color: #f9f9f5;
+  --nav-slider-bg-color: antiquewhite
+  --primary-font: Franklin Gothic Medium;
+}
+
 div.child {
-  font-family: "Franklin Gothic Medium", "Arial Narrow", Arial, sans-serif;
+  font-family: var(--primary-font), "Arial Narrow", Arial, sans-serif;
   transition: all 0.2s ease;
-  background: antiquewhite;
 }
 
 .hidden {
@@ -11,9 +17,43 @@ div.child {
 }
 
 body {
-  background-color: antiquewhite;
+  background-color: var(--main-bg-color);
   text-align: center;
+  font-family: Candara;
+
 }
+
+:root {
+  --grid-cols: 1;
+  --grid-rows: 1;
+}
+
+#container {
+  display: grid;
+  grid-gap: 0em;
+  grid-template-rows: repeat(var(--grid-rows), 1fr);
+  grid-template-columns: repeat(var(--grid-cols), 1fr);
+}
+
+.grid-item {
+  padding: 1em;
+  border: 1px solid #ddd;
+  justify-content: start;
+  padding: 0;
+  margin: 0;
+  width: 100%;
+  white-space: nowrap; 
+}
+
+/*
+USE THIS TO APPEND TASKS TO CORRECT ROW / COLUMN
+.item {
+  grid-column-start: <number> | <name> | span <number> | span <name> | auto;
+  grid-column-end: <number> | <name> | span <number> | span <name> | auto;
+  grid-row-start: <number> | <name> | span <number> | span <name> | auto;
+  grid-row-end: <number> | <name> | span <number> | span <name> | auto;
+}
+*/
 
 h1 {
   margin: 5% 0 1% 0;
@@ -22,7 +62,7 @@ h1 {
 input[type="text"] {
   background: transparent;
   border: none;
-  width: 70%;
+  width: 100%;
 }
 
 input[type="text"]:focus {
@@ -50,23 +90,22 @@ nav {
   left: -16em;
   top: 0;
   bottom: 0;
-  background-color: antiquewhite;
-  border-right: 130px solid antiquewhite;
-  // box-shadow: 0.2px 0 0.2px rgba(0, 0, 0, 0.2);
+  background-color: var(--nav-bg-color);
+  border-right: 130px solid var(--nav-bg-color);
   z-index: 1;
   cursor: pointer;
 }
 
 nav:after {
   position: absolute;
-  content: " ";
-  width: 0;
-  height: 0;
-  right: -150px;
-  top: 20%;
-  border-width: 15px 10px;
-  border-style: solid;
-  border-color: transparent transparent transparent #2b2c29;
+	content: ' ';
+	width: 0;
+	height: 0;
+	right: -170px;
+	top: 20%;
+	border-width: 25px 20px;
+	border-style: solid;
+	border-color: transparent transparent transparent black;
 }
 
 nav ul {

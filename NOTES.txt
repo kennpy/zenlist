@@ -1,22 +1,35 @@
-DATABSE FORMAT
+How tasks will work
 
-MongoDB with Mongoose ORM
- - json FORMAT
+send to db and receive in same FORMAT
+when we receive a task its a list of tasks
+we parse that and loop through adding to page
+when we make a new task we do the same but 
+    1. swap the grid element with input with the grid element we are just about to make with the task
+    2. Add task row, add input row, delete first input row (1+2+3 -> X+1+2)
+    3. Keep the input below the grid so whenever we add a row we push it down
+    4. Keep input in grid but always add row before input so it constantly gets pushed down
 
-"Task" {
-     $id: int (generic id),
-     "user" : Users.$id --> LINK to User table
-     $tasks: Array (tasks)
-     "placement" : int -- how necessary it is (1-5 / Max Number of Lists)
-      { "task":"get milk", "page" : "first","completed": boolean, "important" : boolean}, . . , . 
- }
+ - when a user shifts we get the input and append it to the corresponding grid  
+    /. 
 
-// for user authentication + authorization (later)
-// --> Right now use MY LOGIN on real server so data is saved --> skip login with cookie session or something
- "Users" {
-     {
-         $id : int (generic id) 
-         "name" : string
-         "password" : int (hashed pass or something like that )
-     }
- }
+ - if we are out of range we dont shift
+
+
+
+
+MISC
+
+ /* MAKING THIS
+  <input
+                onblur="this.focus()"
+                type="text"
+                class="rq-form-element" AND "current-input-field"
+                name="todoInput"
+                id="text"
+                minlength="3"
+                maxlength="100"
+                required
+                autofocus
+              />
+              <i></i>
+  */
