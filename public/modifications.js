@@ -83,19 +83,14 @@ function addTasksToDom(taskList) {
 
 function addTaskToDom(text, isImportant, taskId, taskDepth, isCompleted) {
   currentRow++;
-
+  console.log(taskId, isCompleted, "<- isCompleted");
   // Add new row to table
-  let newTodo = makeTodoElement(
-    text,
-    isImportant,
-    taskId,
-    taskDepth,
-    isCompleted
-  );
+  let newTodo = makeTodoElement(text, isImportant, taskId, isCompleted);
 
   // TODO : CHANGER HERE to append based on GRID
   newTodo.style.setProperty("grid-column-start", NUM_COL_OFFSET + taskDepth);
   newTodo.style.setProperty("grid-row-start", currentRow);
+  renderStatus(isCompleted, newTodo);
   container.appendChild(newTodo);
 }
 
@@ -107,14 +102,15 @@ function addInputToDom(input, colStart, rowStart) {
   input.focus();
 }
 
-function makeTodoElement(text, isImportant, taskId, taskDepth) {
+function makeTodoElement(text, isImportant, taskId, isCompleted) {
   // make new element and append it to list with delete button
   let deleteButton = makeDeleteButton();
   let newTodo = document.createElement("div");
 
   newTodo.classList += "child";
+  newTodo.classList += "grid-item";
   newTodo.textContent = isImportant ? "\u2729 " + text : text;
-  newTodo.dataset.checked = false;
+  newTodo.dataset.checked = isCompleted;
   newTodo.dataset.id = taskId;
   //newTodo.style.marginLeft = `${MARGIN_LENGTH * taskDepth}px`;
 
@@ -164,9 +160,6 @@ function extractInputValues(currentInput) {
   const text = currentInput.value;
   const isImportant = importanceInput.checked;
 
-  currentInput.value = "";
-  importanceInput.checked = false;
-
   return {
     text,
     parentList: "test",
@@ -194,8 +187,10 @@ async function handleEnter(e) {
   const currentInput = document.querySelector(INPUT_FIELD_IDENTIFIER);
   const { text, parentList, isImportant, taskDepth, completed } =
     extractInputValues(currentInput);
+  currentInput.value = "";
+  importanceInput.checked = false;
 
-  const { _id } = await saveToServer(
+  const { _id } = await saveTaskToServer(
     text,
     parentList,
     currentColumn,
@@ -210,6 +205,26 @@ async function handleEnter(e) {
   addTaskToDom(text, isImportant, _id, currentColumn, completed);
   addInputToDom(currentInput, currentColumn, currentRow);
   currentInput.focus();
+}
+
+function getTextFromNode(node, addSpaces) {
+  var i, result, text, child;
+  result = "";
+  for (i = 0; i < node.childNodes.length; i++) {
+    child = node.childNodes[i];
+    text = null;
+    if (child.nodeType === 1) {
+      text = getTextFromNode(child, addSpaces);
+    } else if (child.nodeType === 3) {
+      text = child.nodeValue;
+    }
+    if (text) {
+      if (addSpaces && /\S$/.test(result) && /^\S/.test(text))
+        text = " " + text;
+      result += text;
+    }
+  }
+  return result;
 }
 
 // EVENT LISTENERS
@@ -247,15 +262,18 @@ function handleShift(evt) {
       }%`;
       // NOTE : THIS IS SPAGHETTI AND SHOULD BE FIXED
       // ^^ Check if we are at starting depth and hard code it in (prevent wrong margin on left)
+      currentInput.parentElement.removeChild(currentInput);
+      const shiftedInput = makeInputElement();
+      addInputToDom(shiftedInput, currentColumn, currentRow);
       if (currentColumn != 0) {
         //norm in pixels - MARGIN_LENGTH * taskDepth
         // add ^^ + 50%
         console.log("width : ", currentInput.style.width);
-        currentInput.style.marginLeft = newWidth;
+        //currentInput.style.marginLeft = newWidth;
       } else {
         console.log("setting margin to default");
         //currentInput.style.marginLeft = `${DEFAULT_MARGIN_LEFT}`;
-        currentInput.style.marginLeft = `${pixelOffsetToMiddle}px`;
+        //currentInput.style.marginLeft = `${pixelOffsetToMiddle}px`;
       }
     } else {
     }
@@ -268,7 +286,10 @@ function handleShift(evt) {
         //DEFAULT_MARGIN_LEFT + DEFAULT_MARGIN_LEFT_SCALER * currentDepth + 50
         pixelOffsetToMiddle + MARGIN_LENGTH * currentColumn
       }%`;
-      currentInput.style.marginLeft = newWidth;
+      //currentInput.style.marginLeft = newWidth;
+      currentInput.parentElement.removeChild(currentInput);
+      const shiftedInput = makeInputElement();
+      addInputToDom(shiftedInput, currentColumn, currentRow);
       console.log("Current depth : ", currentColumn);
     } else {
       console.log("Out of range. Depth is ", currentColumn);
@@ -279,15 +300,22 @@ function handleShift(evt) {
 
 function attachToggleCheckEventListener(element) {
   element.addEventListener("click", (e) => {
+    // update view
     e.preventDefault();
     let taskStatus = element.dataset.checked == "true";
     console.log("staus becoming ", !taskStatus);
     let taskIsCompleted = !taskStatus;
+    // tell server what happened
     handleTaskStatus(element, taskIsCompleted);
   });
 }
 
 function handleTaskStatus(element, taskIsCompleted) {
+  renderStatus(taskIsCompleted, element);
+  updateTaskCompletionInDB(element, taskIsCompleted);
+}
+
+function renderStatus(taskIsCompleted, element) {
   const checkedStyles = {
     complete: {
       checkedValue: true,
@@ -356,7 +384,13 @@ form.addEventListener("submit", handleEnter);
 
 // NOTE : taskId will be deprecated since id will be generated on backend. That way id stored in db matches what's
 // on frontend so we dont need to convert between the two
-async function saveToServer(text, parentList, depth, isImportant, isCompleted) {
+async function saveTaskToServer(
+  text,
+  parentList,
+  depth,
+  isImportant,
+  isCompleted
+) {
   const ret = await fetch("/tasks", {
     method: "POST",
     headers: {
@@ -371,6 +405,45 @@ async function saveToServer(text, parentList, depth, isImportant, isCompleted) {
     }),
   }).then((data) => data.json());
   return ret;
+}
+
+async function updateTaskCompletionInDB(element, taskIsCompleted) {
+  const computedStyle = window.getComputedStyle(element);
+  const depth = computedStyle.getPropertyValue("grid-column-start");
+  console.log("telling server task is completed for task ", element.dataset.id);
+  //var parentElement = element.parentElement;
+  // Returns the text content as a string
+
+  const text = extractTextFromElement(element);
+
+  console.log("textContent", text);
+  await fetch("/tasks", {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      id: element.dataset.id,
+      description: text,
+      parentList: "test",
+      depth: depth - NUM_COL_OFFSET,
+      isImportant: "false",
+      completed: taskIsCompleted,
+    }),
+  });
+}
+
+function extractTextFromElement(element) {
+  let elChildNode = element.childNodes;
+  let text = "";
+
+  elChildNode.forEach(function (value) {
+    if (value.nodeType === Node.TEXT_NODE) {
+      console.log("Current textNode value is : ", value.nodeValue.trim());
+      text += value.nodeValue;
+    }
+  });
+  return text;
 }
 
 function getAllTasks() {

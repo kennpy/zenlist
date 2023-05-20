@@ -3,12 +3,12 @@
   --nav-bg-color: #f9f9f5;
   --nav-slider-bg-color: antiquewhite
   --primary-font: Franklin Gothic Medium;
+  --grid-cols: 1;
+  --grid-rows: 1;
 }
 
-div.child {
-  font-family: var(--primary-font), "Arial Narrow", Arial, sans-serif;
-  transition: all 0.2s ease;
-}
+
+
 
 .hidden {
   visibility: hidden;
@@ -23,10 +23,6 @@ body {
 
 }
 
-:root {
-  --grid-cols: 1;
-  --grid-rows: 1;
-}
 
 #container {
   display: grid;
@@ -35,14 +31,20 @@ body {
   grid-template-columns: repeat(var(--grid-cols), 1fr);
 }
 
-.grid-item {
+.childgrid-item {
   padding: 1em;
-  border: 1px solid #ddd;
   justify-content: start;
   padding: 0;
-  margin: 0;
+  margin: 3px;
   width: 100%;
   white-space: nowrap; 
+}
+
+
+.delete{
+  background-color: #f9f9f5;
+  border: 1px solid gray;
+  border-radius: 2px;
 }
 
 /*

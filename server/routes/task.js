@@ -41,4 +41,9 @@ router.delete("/", async (req, res) => {
   }
 });
 
+router.put("/", async (req, res) => {
+  console.log("updating task  ", req.body);
+  await TaskModel.findByIdAndUpdate(req.body.id, req.body);
+});
+
 export default router;
