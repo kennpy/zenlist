@@ -8,27 +8,31 @@
     <title>Zen List</title>
   </head>
   <body>
-    <h1>Zen List</h1>
-    <div class="task-side">
-      <section class="input">
-        <div>
-          <label for="todoInput">Add a todo : </label>
-        </div>
-        <div>
-          <label for="importantButton">Label as important : </label>
-          <input type="checkbox" name="importantButton" id="importance" />
-          <button type="submit">Submit</button>
-        </div>
-      </section>
+    <header>
+      <h1>Zen List</h1>
+      <div class="task-side">
+        <section class="input">
+          <div>
+            <label for="todoInput">Add a todo : </label>
+          </div>
+          <div>
+            <label for="importantButton">Label as important : </label>
+            <input type="checkbox" name="importantButton" id="importance" />
+            <button type="submit">Submit</button>
+          </div>
+          <h3>Current Todos</h3>
+        </section>
+      </div>
+    </header>
+    <main>
       <section class="storage">
-        <h3>Current Todos</h3>
         <ol class="list">
           <form action="/" method="POST">
             <div id="container"></div>
           </form>
         </ol>
       </section>
-    </div>
+    </main>
     <div class="nav-side">
       <nav>
         <ul>

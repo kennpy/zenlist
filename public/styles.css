@@ -1,14 +1,16 @@
 :root {
   --main-bg-color: #f9f9f5;
   --nav-bg-color: #f9f9f5;
-  --nav-slider-bg-color: antiquewhite
+  --nav-slider-bg-color: antiquewhite;
   --primary-font: Franklin Gothic Medium;
+  --task-font-size: 20px;
   --grid-cols: 1;
   --grid-rows: 1;
 }
 
-
-
+header {
+  text-align: center;
+}
 
 .hidden {
   visibility: hidden;
@@ -18,17 +20,16 @@
 
 body {
   background-color: var(--main-bg-color);
-  text-align: center;
   font-family: Candara;
-
 }
-
 
 #container {
   display: grid;
   grid-gap: 0em;
   grid-template-rows: repeat(var(--grid-rows), 1fr);
   grid-template-columns: repeat(var(--grid-cols), 1fr);
+  min-height: 0; /* NEW */
+  min-width: 0; /* NEW; needed for Firefox */
 }
 
 .childgrid-item {
@@ -37,11 +38,12 @@ body {
   padding: 0;
   margin: 3px;
   width: 100%;
-  white-space: nowrap; 
+  white-space: nowrap;
+  overflow: visible; /* NEW */
+  min-width: 0; /* NEW; needed for Firefox */
 }
 
-
-.delete{
+.delete {
   background-color: #f9f9f5;
   border: 1px solid gray;
   border-radius: 2px;
@@ -65,6 +67,9 @@ input[type="text"] {
   background: transparent;
   border: none;
   width: 100%;
+  margin-top: 3px;
+  font-size: 16px;
+  font-family: var(--primary-font);
 }
 
 input[type="text"]:focus {
@@ -100,14 +105,14 @@ nav {
 
 nav:after {
   position: absolute;
-	content: ' ';
-	width: 0;
-	height: 0;
-	right: -170px;
-	top: 20%;
-	border-width: 25px 20px;
-	border-style: solid;
-	border-color: transparent transparent transparent black;
+  content: " ";
+  width: 0;
+  height: 0;
+  right: -170px;
+  top: 20%;
+  border-width: 25px 20px;
+  border-style: solid;
+  border-color: transparent transparent transparent black;
 }
 
 nav ul {
@@ -115,6 +120,7 @@ nav ul {
   list-style-type: none;
   margin: 0;
   padding: 1em;
+  text-align: center;
 }
 
 nav a:link,
@@ -178,3 +184,5 @@ nav:hover ~ article:after {
     opacity: 0;
   }
 }
+
+/*  CHECKBOX STYLES */

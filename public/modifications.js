@@ -1,13 +1,14 @@
 /*
 Functionality for all specific tasks lists
 Important
-TODO : Change task creation so it relies on GRID
+TODO : Experiment with different delete button design (SMALLER & LESS APPARENT)
+TODO : Add comment support (font as italics + bold with 'NOTE : ' appended to beginning )
+TODO : Register deletes with SHIFT - CLICK (instead of DELETE BTN)
 
 Less important
-TODO : find alternate shift-f + shift-d that shows nothing
-TODO : Add check-off BOX that relies on TYPING to ADD X to BOX --> Satisfy
-TODO : Add 'importance' support (font as italics)
-    
+TODO : Make ctrl-a + Delete remove all text in box (NOW : Deletes last character)
+TODO : Make create task fade in to hide the flicker
+
 */
 
 // DOM ELEMENTS
@@ -96,24 +97,30 @@ function addTaskToDom(text, isImportant, taskId, taskDepth, isCompleted) {
 }
 
 function addInputToDom(input, colStart, rowStart) {
+  // OVERALL TRACKING --> rowStart used since sometimes we want to change rowStart from what current row is (ex: General key VS Enter key handling)
+  // General key requires input be made on same row but enter requires next row. So if we're on same row
+  if (addInputToDom.caller == focusInput) currentRow++;
+
   input.style.setProperty("grid-column-start", NUM_COL_OFFSET + colStart);
   input.style.setProperty("grid-row-start", rowStart + 1); // add one to always add below recent task
   container.appendChild(input);
-  currentRow++;
   input.focus();
 }
 
 function makeTodoElement(text, isImportant, taskId, isCompleted) {
   // make new element and append it to list with delete button
-  let deleteButton = makeDeleteButton();
-  let newTodo = document.createElement("div");
 
-  newTodo.classList += "child";
-  newTodo.classList += "grid-item";
+  // ORIGINAL (1)
+  const newTodo = document.createElement("div");
+
+  let deleteButton = makeDeleteButton();
+
   newTodo.textContent = isImportant ? "\u2729 " + text : text;
   newTodo.dataset.checked = isCompleted;
   newTodo.dataset.id = taskId;
+  newTodo.classList.add("childgrid-item");
 
+  // ORIGINAL (2)
   newTodo.appendChild(deleteButton);
   attachDeleteBtnEventListener(deleteButton);
   attachToggleCheckEventListener(newTodo);
@@ -128,15 +135,15 @@ function makeDeleteButton() {
   return deleteButton;
 }
 
-function makeInputElement() {
+function makeInputElement(startingText = "") {
   let newInput = document.createElement("input");
-  newInput = setInputAttributes(newInput);
-  newInput.addEventListener("keyup", textInputChangeEventListener);
+  newInput = setInputAttributes(newInput, startingText);
+  newInput.addEventListener("keydown", keyPressEventListener);
 
   return newInput;
 }
 
-function setInputAttributes(newInput) {
+function setInputAttributes(newInput, startingText) {
   newInput.setAttribute("onblur", "this.focus()");
   newInput.setAttribute("type", "text");
   newInput.setAttribute("class", "rq-form-element");
@@ -147,8 +154,9 @@ function setInputAttributes(newInput) {
   newInput.setAttribute("maxlength", "100");
   newInput.setAttribute("require", "true");
   newInput.setAttribute("autofocus", "true");
+  newInput.value = startingText;
 
-  newInput.style.marginLeft = `${50}%`;
+  //newInput.style.marginLeft = `${50}%`;
 
   const cursor = document.createElement("i");
   newInput.appendChild(cursor);
@@ -203,7 +211,7 @@ async function handleEnter(e) {
     const newTodo = makeTodoElement(text, isImportant, _id, taskDepth);
     console.log("newTodo ", newTodo);
 
-    // add task to dom and make sure input is below it
+    // add task to dom and make sure input is below it. We add task first so input is added to correct location
     addTaskToDom(text, isImportant, _id, currentColumn, completed);
     addInputToDom(currentInput, currentColumn, currentRow);
     currentInput.focus();
@@ -241,63 +249,58 @@ EventTarget.prototype.addEventListener = (() => {
   };
 })();
 
-function textInputChangeEventListener(evt) {
+function keyPressEventListener(evt) {
   focusInput();
   if ((evt.shiftKey && evt.key === "D") || (evt.shiftKey && evt.key === "F")) {
     handleShift(evt);
   }
-  window.scrollTo(0, 0);
 }
 
 // NOTE : focusInput is needed since input.focus() is not working --> IDK WHY
 function focusInput() {
   const currentInput = document.querySelector(INPUT_FIELD_IDENTIFIER);
   const currentText = currentInput.value;
-  console.log(currentInput, " ----> PARENT ---> ", currentInput.parent);
   currentInput.parentElement.removeChild(currentInput);
-  const inputCopy = makeInputElement();
-  inputCopy.value = currentText;
-  addInputToDom(inputCopy, currentColumn, currentRow);
+  const inputCopy = makeInputElement(currentText);
+  // NOTE : Decrement currentRow since we are placing an input in the same place. addInput assumes new row so we must correct this
+  currentRow--;
+  addInputToDom(inputCopy, currentColumn, currentRow + 1);
 }
 
 function handleShift(evt) {
+  // prevent the character from being registered and shift input to correct grid slot
+  evt.preventDefault();
   const currentInput = document.querySelector(INPUT_FIELD_IDENTIFIER);
-  const previousTextValue = currentInput.value;
-  console.log(previousTextValue);
-  currentInput.value = previousTextValue.slice(0, -1);
-  const pixelOffsetToMiddle = currentInput.clientWidth / 2;
-  console.log("pixels to middle ", pixelOffsetToMiddle);
+  const currentText = currentInput.value;
   if (evt.shiftKey && evt.key === "D") {
-    // check current depth and decrement if in range
+    // shift input to previous grid slot if in range
     if (currentColumn > MIN_TASK_DEPTH) {
       currentColumn--;
       currentInput.parentElement.removeChild(currentInput);
-      const shiftedInput = makeInputElement();
+      const shiftedInput = makeInputElement(currentText);
       addInputToDom(shiftedInput, currentColumn, currentRow);
     }
   } else if (evt.shiftKey && evt.key === "F") {
-    // check current depth and decrement if in range
+    // shift input to next grid slot if in range
     if (currentColumn < MAX_TASK_DEPTH - TASK_DEPTH_CORRECTOR) {
       currentColumn++;
       currentInput.parentElement.removeChild(currentInput);
-      const shiftedInput = makeInputElement();
+      const shiftedInput = makeInputElement(currentText);
       addInputToDom(shiftedInput, currentColumn, currentRow);
       console.log("Current depth : ", currentColumn);
     } else {
       console.log("Out of range. Depth is ", currentColumn);
     }
   }
-  window.scrollTo(0, 0);
 }
 
 function attachToggleCheckEventListener(element) {
   element.addEventListener("click", (e) => {
-    // update view
+    // update view and tell server what happened
     e.preventDefault();
     let taskStatus = element.dataset.checked == "true";
     console.log("staus becoming ", !taskStatus);
     let taskIsCompleted = !taskStatus;
-    // tell server what happened
     handleTaskStatus(element, taskIsCompleted);
   });
 }
@@ -329,22 +332,17 @@ function renderStatus(taskIsCompleted, element) {
 function attachDeleteBtnEventListener(btn) {
   btn.addEventListener("click", (e) => {
     console.log("DELETE BUTTON CLICKED ", e);
-    currentRow--;
+    //currentRow--;
     // \e.preventDefault(); // DISABLING THIS MAKES IT WORK AND IDK WHY !!
     e.stopImmediatePropagation();
     e.preventDefault(); // ENABLING THIS MAKES IT WORK NOW AND IDK WHY (something to do w/ parent vs sibling relationship or something)
-    let pointerId = e.pointerId;
-    //if (form.childElementCount > 0 && e.pointerId == -1) pointerId = 1; // reset pointer id if there is already a task since it changes to -1 for somet reason
+    // reset pointer id if there is already a task since it changes to -1 for somet reason
     if (form.childElementCount > 0 && e.pointerId == -1) {
       handleEnter(e);
     }
-    if (pointerId === 1) {
+    if (e.pointerId === 1) {
       console.log("legitimate delete call");
       let wordId = btn.parentElement.dataset.id;
-      // btn.parentElement.classList += " hidden"; // hide the todo now that its been deleted
-      // if (btn.parentElement.nextElementSibling) {
-      //   btn.parentElement.nextElementSibling.remove(); // remove the br so no extra width is maintained
-      // }
 
       const deleteOptions = {
         id: wordId,
@@ -363,7 +361,7 @@ function attachDeleteBtnEventListener(btn) {
           ).filter((elem) => elem.dataset.id == deletedEntry.id)[0];
           btn.parentElement.parentElement.removeChild(taskToDelete);
         });
-      currentRow = currentRow - 1;
+      //currentRow--;
     } else {
       console.log("illegitimate delete call");
     }

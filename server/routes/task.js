@@ -13,9 +13,7 @@ router.use(bodyParser.json());
 // get all tasks qnd send them
 router.get("/", async (req, res) => {
   let allTasksInList = await TaskModel.find();
-  console.log("All tasks : ", allTasksInList);
   allTasksInList = await TaskModel.find({ parentList: "test" }).exec();
-  console.log("all tasks with parenList == 'test' . . .", allTasksInList);
   res.send(allTasksInList);
 });
 
@@ -25,7 +23,6 @@ router.post("/", async (req, res) => {
   console.log(body);
   // make the task and send it back if working
   const taskJustMade = await TaskModel.create(body);
-  console.log("TASK JUST MADE : ", taskJustMade);
   res.status(200).json(taskJustMade);
 });
 
@@ -33,7 +30,6 @@ router.post("/", async (req, res) => {
 router.delete("/", async (req, res) => {
   console.log("deleting task with id ", req.body.id);
   const deletedTask = await TaskModel.findByIdAndDelete(req.body.id);
-  console.log("deleted ", deletedTask);
   if (deletedTask != null) {
     res.json({ id: deletedTask._id });
   } else {
@@ -42,7 +38,7 @@ router.delete("/", async (req, res) => {
 });
 
 router.put("/", async (req, res) => {
-  console.log("updating task  ", req.body);
+  console.log("updating task with id ", req.body.id);
   await TaskModel.findByIdAndUpdate(req.body.id, req.body);
 });
 
