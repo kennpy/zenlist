@@ -41,6 +41,7 @@ body {
   white-space: nowrap;
   overflow: visible; /* NEW */
   min-width: 0; /* NEW; needed for Firefox */
+  white-space: break-spaces;
 }
 
 .delete {

@@ -1,13 +1,13 @@
 /*
 Functionality for all specific tasks lists
 Important
-TODO : Experiment with different delete button design (SMALLER & LESS APPARENT)
 TODO : Add comment support (font as italics + bold with 'NOTE : ' appended to beginning )
 TODO : Register deletes with SHIFT - CLICK (instead of DELETE BTN)
 
 Less important
 TODO : Make ctrl-a + Delete remove all text in box (NOW : Deletes last character)
 TODO : Make create task fade in to hide the flicker
+TODO : (attempted) Experiment with different delete button design (SMALLER & LESS APPARENT)
 
 */
 
@@ -107,18 +107,47 @@ function addInputToDom(input, colStart, rowStart) {
   input.focus();
 }
 
+// NEW (EXPERIMENT)
+var addRule = (function (style) {
+  var sheet = document.head.appendChild(style).sheet;
+  return function (selector, css) {
+    var propText =
+      typeof css === "string"
+        ? css
+        : Object.keys(css)
+            .map(function (p) {
+              return p + ":" + (p === "content" ? "'" + css[p] + "'" : css[p]);
+            })
+            .join(";");
+    sheet.insertRule(selector + "{" + propText + "}", sheet.cssRules.length);
+  };
+})(document.createElement("style"));
+
 function makeTodoElement(text, isImportant, taskId, isCompleted) {
   // make new element and append it to list with delete button
 
   // ORIGINAL (1)
   const newTodo = document.createElement("div");
-
+  const todoBox = "[  ] ";
   let deleteButton = makeDeleteButton();
 
+  text = todoBox + text;
   newTodo.textContent = isImportant ? "\u2729 " + text : text;
   newTodo.dataset.checked = isCompleted;
   newTodo.dataset.id = taskId;
   newTodo.classList.add("childgrid-item");
+
+  // NEW (EXPERIMENT) --> WORKING (dont want to deal with this right now)
+  addRule("div.childgrid-item:before", {
+    position: "absolute",
+    content: "attr(data-content)",
+    color: "$lightgray",
+    "clip-path": "polygon(0 0, 0 0, 0% 100%, 0 100%)",
+    "text-decoration": "line-through",
+    "text-decoration-thickness": "3px",
+    "text-decoration-color": "$black",
+    transition: "clip-path 200ms cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+  });
 
   // ORIGINAL (2)
   newTodo.appendChild(deleteButton);
@@ -311,22 +340,43 @@ function handleTaskStatus(element, taskIsCompleted) {
 }
 
 function renderStatus(taskIsCompleted, element) {
+  const checkOffLocation = 2;
+  const originalText = extractTextFromElement(element);
+
   const checkedStyles = {
     complete: {
       checkedValue: true,
-      textDecoration: "line-through",
+      textDecoration: "none",
+      fillValue: "X",
     },
     incomplete: {
       checkedValue: false,
       textDecoration: "none",
+      fillValue: "",
     },
   };
-  const { checkedValue, textDecoration } = taskIsCompleted
+  const checkStyles = taskIsCompleted
     ? checkedStyles.complete
     : checkedStyles.incomplete;
 
+  const { checkedValue, textDecoration, fillValue } = checkStyles;
+
   element.dataset.checked = checkedValue;
   element.style.textDecoration = textDecoration;
+  // REMOVE X
+  if (checkStyles == checkedStyles.complete) {
+    element.textContent =
+      originalText.slice(0, checkOffLocation) +
+      fillValue +
+      originalText.slice(checkOffLocation);
+  }
+  // ADD X
+  else {
+    element.textContent =
+      originalText.slice(0, checkOffLocation) +
+      fillValue +
+      originalText.slice(checkOffLocation + 1);
+  }
 }
 
 function attachDeleteBtnEventListener(btn) {
